@@ -654,6 +654,44 @@ const titles = [
     { rate: 0, title: "見習いンズ", comment: "", emoji: "🌱" }
 ];
 
+// クラス制（ポイント累計で昇格）
+const classThresholds = [
+    { minPoints: 1500, className: 'S Class' },
+    { minPoints: 700, className: 'A Class' },
+    { minPoints: 350, className: 'B Class' },
+    { minPoints: 150, className: 'C Class' },
+    { minPoints: 50, className: 'D Class' },
+    { minPoints: 0, className: 'E Class' }
+];
+
+// クラス算出
+function getClassForPoints(points) {
+    for (const threshold of classThresholds) {
+        if (points >= threshold.minPoints) {
+            return threshold.className;
+        }
+    }
+    return 'E Class';
+}
+
+// シーズンID取得（月単位）
+function getSeasonId() {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
+
+// シーズン番号取得（2026年1月を第1シーズンとする）
+function getSeasonNumber() {
+    const now = new Date();
+    return (now.getFullYear() - 2026) * 12 + (now.getMonth() + 1);
+}
+
+// シーズン終了日取得
+function getSeasonEndDate() {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+}
+
 // グローバル変数
 let username = '';
 let currentQuestions = [];
@@ -662,27 +700,23 @@ let score = 0;
 let timeLeft = 15;
 let timer = null;
 let isAnswered = false;
-let weeklyStats = { correct: 0, total: 0 };
-let bestWeeklyRate = 0;
+let userStats = {
+    points: 0,
+    stones: 0,
+    class: 'E Class',
+    correctRate: 0,
+    historyLimit: 5,
+    loginBonusDate: null,
+    title: null
+};
 let currentTitle = null;
 let newTitleAchieved = false;
-
-// 週の開始日（月曜日0時）を取得
-function getWeekStart() {
-    const now = new Date();
-    const day = now.getDay();
-    const diff = day === 0 ? -6 : 1 - day;
-    const monday = new Date(now);
-    monday.setDate(now.getDate() + diff);
-    monday.setHours(0, 0, 0, 0);
-    return monday.toISOString().split('T')[0];
-}
 
 // 初期化
 async function init() {
     try {
         const savedUsername = localStorage.getItem('sixtonesQuizUsername');
-        
+
         if (savedUsername) {
             username = savedUsername;
             await loadUserStats();
@@ -709,31 +743,80 @@ function showScreen(screenId) {
 // ユーザー統計の読み込み
 async function loadUserStats() {
     try {
-        const weekStart = getWeekStart();
         const userDocRef = db.collection('users').doc(username);
         const userDoc = await userDocRef.get();
-        
+
         if (userDoc.exists) {
             const data = userDoc.data();
-            
-            if (data.weekStart === weekStart) {
-                weeklyStats = { correct: data.correct || 0, total: data.total || 0 };
-            } else {
-                weeklyStats = { correct: 0, total: 0 };
-            }
-            
-            bestWeeklyRate = data.bestRate || 0;
+            userStats = {
+                points: data.points || 0,
+                stones: data.stones || 0,
+                class: data.class || 'E Class',
+                correctRate: data.correctRate || 0,
+                historyLimit: data.historyLimit || 5,
+                loginBonusDate: data.loginBonusDate || null,
+                title: data.title || null
+            };
             currentTitle = data.title || null;
         } else {
-            weeklyStats = { correct: 0, total: 0 };
-            bestWeeklyRate = 0;
+            userStats = {
+                points: 0,
+                stones: 0,
+                class: 'E Class',
+                correctRate: 0,
+                historyLimit: 5,
+                loginBonusDate: null,
+                title: null
+            };
             currentTitle = null;
         }
     } catch (error) {
         console.error('統計読み込みエラー:', error);
-        weeklyStats = { correct: 0, total: 0 };
-        bestWeeklyRate = 0;
+        userStats = {
+            points: 0, stones: 0, class: 'E Class',
+            correctRate: 0, historyLimit: 5,
+            loginBonusDate: null, title: null
+        };
         currentTitle = null;
+    }
+}
+
+// ユーザーデータの保存
+async function saveUserStats() {
+    try {
+        const userDocRef = db.collection('users').doc(username);
+        await userDocRef.set({
+            username: username,
+            points: userStats.points,
+            stones: userStats.stones,
+            class: userStats.class,
+            correctRate: userStats.correctRate,
+            historyLimit: userStats.historyLimit,
+            loginBonusDate: userStats.loginBonusDate,
+            title: userStats.title,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    } catch (error) {
+        console.error('ユーザーデータ保存エラー:', error);
+    }
+}
+
+// クイズ履歴の保存
+async function saveHistory(questionData, selectedAnswer, isCorrect, earnedPoints) {
+    try {
+        const historyRef = db.collection('history').doc(username)
+            .collection('items');
+        await historyRef.add({
+            question: questionData.question,
+            answer: questionData.options[selectedAnswer] || '時間切れ',
+            correct: isCorrect,
+            points: earnedPoints,
+            difficulty: questionData.difficulty,
+            explanation: questionData.explanation || '',
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    } catch (error) {
+        console.error('履歴保存エラー:', error);
     }
 }
 
@@ -801,23 +884,19 @@ function showAnswerEffect(isCorrect) {
 // スタート画面の更新
 function updateStartScreen() {
     document.getElementById('usernameDisplay').textContent = username;
-    
-    const rate = weeklyStats.total > 0 
-        ? ((weeklyStats.correct / weeklyStats.total) * 100).toFixed(1)
-        : '0.0';
-    
-    document.getElementById('weeklyRate').textContent = rate + '%';
-    document.getElementById('weeklyDetail').textContent = 
-        `(${weeklyStats.correct} / ${weeklyStats.total})`;
-    document.getElementById('bestRate').textContent = bestWeeklyRate.toFixed(1) + '%';
-    
-    // 称号の表示（今週の正答率に応じて）
+
+    // クラス・ポイント・ストーン表示
+    const classDisplay = document.getElementById('classDisplay');
+    if (classDisplay) classDisplay.textContent = userStats.class;
+    const pointsDisplay = document.getElementById('pointsDisplay');
+    if (pointsDisplay) pointsDisplay.textContent = userStats.points + 'P';
+    const stonesDisplay = document.getElementById('stonesDisplay');
+    if (stonesDisplay) stonesDisplay.textContent = userStats.stones;
+
+    // 称号の表示
     const titleDisplay = document.getElementById('titleDisplay');
-    const currentRate = weeklyStats.total > 0 
-        ? ((weeklyStats.correct / weeklyStats.total) * 100)
-        : 0;
-    const displayTitle = getTitleForRate(currentRate);
-    
+    const displayTitle = currentTitle || getTitleForRate(0);
+
     if (displayTitle) {
         let titleHTML = `
             <div class="title-label">＜称号＞</div>
@@ -1036,51 +1115,40 @@ function selectAnswer(originalIndex, displayIndex, correctDisplayIndex) {
 // クイズ終了
 async function finishQuiz() {
     console.log('finishQuiz開始');
-    
+
     showResultScreenWithCurrentData();
-    
+
     try {
-        const weekStart = getWeekStart();
-        
-        weeklyStats.correct += score;
-        weeklyStats.total += 10;
-        
-        const newRate = (weeklyStats.correct / weeklyStats.total) * 100;
-        
-        if (newRate > bestWeeklyRate) {
-            bestWeeklyRate = newRate;
-        }
-        
-        const newTitle = getTitleForRate(newRate);
+        // ポイント加算（フリープレイ: 初級+1, 中級+2, 上級+3）
+        let earnedPoints = 0;
+        currentQuestions.forEach((q, i) => {
+            // 各問題の正解状況はquizResultsに記録されている
+        });
+
+        // 簡易計算: scoreから難易度別ポイントは後続画面実装時に詳細化
+        // 現時点ではフリープレイの正解数ベースでポイント加算
+        earnedPoints = score; // 暫定: 1問1P（難易度別は画面実装時に対応）
+        userStats.points += earnedPoints;
+        userStats.stones += score; // 正解1問ごとに1個
+        userStats.class = getClassForPoints(userStats.points);
+
+        const newTitle = getTitleForRate(score * 10); // 10問中のスコアを%に
         const oldTitleRate = currentTitle ? currentTitle.rate : -1;
         newTitleAchieved = newTitle.rate > oldTitleRate;
-        
+
         if (newTitleAchieved || !currentTitle) {
             currentTitle = newTitle;
+            userStats.title = currentTitle;
         }
-        
-        const userDocRef = db.collection('users').doc(username);
-        await userDocRef.set({
-            username: username,
-            weekStart: weekStart,
-            correct: weeklyStats.correct,
-            total: weeklyStats.total,
-            rate: newRate,
-            bestRate: bestWeeklyRate,
-            title: currentTitle,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        
+
+        await saveUserStats();
         console.log('Firestore保存完了');
-        
+
         await updateRanking();
-        
         console.log('ランキング更新完了');
-        
+
         updateResultScreenWithTitle();
-        
         await loadAndShowRanking();
-        
         console.log('ランキング表示完了');
     } catch (error) {
         console.error('クイズ終了処理エラー:', error);
@@ -1114,12 +1182,10 @@ function showResultScreenWithCurrentData() {
     document.getElementById('resultEmoji').textContent = emoji;
     document.getElementById('resultMessage').textContent = message;
     
-    const tempCorrect = weeklyStats.correct + score;
-    const tempTotal = weeklyStats.total + 10;
-    const rate = ((tempCorrect / tempTotal) * 100).toFixed(1);
-    document.getElementById('resultWeeklyRate').textContent = rate + '%';
-    document.getElementById('resultWeeklyDetail').textContent = 
-        `(${tempCorrect} / ${tempTotal})`;
+    const resultPoints = document.getElementById('resultPoints');
+    if (resultPoints) resultPoints.textContent = `+${score}P (合計: ${userStats.points + score}P)`;
+    const resultStones = document.getElementById('resultStones');
+    if (resultStones) resultStones.textContent = `+${score} (合計: ${userStats.stones + score})`;
     
     document.getElementById('titleAchievement').classList.add('hidden');
 }
@@ -1145,38 +1211,39 @@ function updateResultScreenWithTitle() {
     }
 }
 
-// ランキング更新
+// ランキング更新（月次シーズン制）
 async function updateRanking() {
     try {
-        const weekStart = getWeekStart();
-        const rankingDocRef = db.collection('rankings').doc(weekStart);
-        
+        const seasonId = getSeasonId();
+        const rankingDocRef = db.collection('rankings').doc(seasonId);
+
         const rankingDoc = await rankingDocRef.get();
         let rankings = [];
-        
+
         if (rankingDoc.exists) {
             rankings = rankingDoc.data().data || [];
         }
-        
+
         const existingIndex = rankings.findIndex(r => r.username === username);
         const userData = {
             username: username,
-            rate: (weeklyStats.correct / weeklyStats.total) * 100,
-            correct: weeklyStats.correct,
-            total: weeklyStats.total
+            points: userStats.points,
+            class: userStats.class,
+            grade: null
         };
-        
+
         if (existingIndex >= 0) {
             rankings[existingIndex] = userData;
         } else {
             rankings.push(userData);
         }
-        
-        rankings.sort((a, b) => b.rate - a.rate);
+
+        rankings.sort((a, b) => b.points - a.points);
         rankings = rankings.slice(0, 50);
-        
+
         await rankingDocRef.set({
-            weekStart: weekStart,
+            seasonNumber: getSeasonNumber(),
+            endsAt: firebase.firestore.Timestamp.fromDate(getSeasonEndDate()),
             data: rankings,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
@@ -1188,33 +1255,33 @@ async function updateRanking() {
 // ランキング読み込みと表示
 async function loadAndShowRanking() {
     try {
-        const weekStart = getWeekStart();
-        const rankingDocRef = db.collection('rankings').doc(weekStart);
+        const seasonId = getSeasonId();
+        const rankingDocRef = db.collection('rankings').doc(seasonId);
         const rankingDoc = await rankingDocRef.get();
-        
+
         const rankingList = document.getElementById('rankingList');
         const noRanking = document.getElementById('noRanking');
-        
+
         if (rankingDoc.exists) {
             const rankings = rankingDoc.data().data || [];
             const top10 = rankings.slice(0, 10);
-            
+
             if (top10.length > 0) {
                 rankingList.innerHTML = '';
                 noRanking.classList.add('hidden');
-                
+
                 top10.forEach((rank, index) => {
                     const li = document.createElement('li');
                     li.className = 'ranking-item';
-                    
+
                     if (index === 0) li.classList.add('first');
                     else if (index === 1) li.classList.add('second');
                     else if (index === 2) li.classList.add('third');
-                    
+
                     if (rank.username === username) {
                         li.classList.add('current');
                     }
-                    
+
                     li.innerHTML = `
                         <div>
                             <span class="rank-number">${index + 1}位</span>
@@ -1223,11 +1290,11 @@ async function loadAndShowRanking() {
                             </span>
                         </div>
                         <div>
-                            <span class="rank-rate">${rank.rate.toFixed(1)}%</span>
-                            <span class="rank-detail">(${rank.correct}/${rank.total})</span>
+                            <span class="rank-class">${rank.class}</span>
+                            <span class="rank-points">${rank.points}P</span>
                         </div>
                     `;
-                    
+
                     rankingList.appendChild(li);
                 });
             } else {
@@ -1247,33 +1314,33 @@ async function loadAndShowRanking() {
 // スタンドアロンランキング表示（トップ画面から呼ばれる）
 async function loadAndShowStandaloneRanking() {
     try {
-        const weekStart = getWeekStart();
-        const rankingDocRef = db.collection('rankings').doc(weekStart);
+        const seasonId = getSeasonId();
+        const rankingDocRef = db.collection('rankings').doc(seasonId);
         const rankingDoc = await rankingDocRef.get();
-        
+
         const rankingList = document.getElementById('rankingListStandalone');
         const noRanking = document.getElementById('noRankingStandalone');
-        
+
         if (rankingDoc.exists) {
             const rankings = rankingDoc.data().data || [];
             const top10 = rankings.slice(0, 10);
-            
+
             if (top10.length > 0) {
                 rankingList.innerHTML = '';
                 noRanking.classList.add('hidden');
-                
+
                 top10.forEach((rank, index) => {
                     const li = document.createElement('li');
                     li.className = 'ranking-item';
-                    
+
                     if (index === 0) li.classList.add('first');
                     else if (index === 1) li.classList.add('second');
                     else if (index === 2) li.classList.add('third');
-                    
+
                     if (rank.username === username) {
                         li.classList.add('current');
                     }
-                    
+
                     li.innerHTML = `
                         <div>
                             <span class="rank-number">${index + 1}位</span>
@@ -1282,11 +1349,11 @@ async function loadAndShowStandaloneRanking() {
                             </span>
                         </div>
                         <div>
-                            <span class="rank-rate">${rank.rate.toFixed(1)}%</span>
-                            <span class="rank-detail">(${rank.correct}/${rank.total})</span>
+                            <span class="rank-class">${rank.class}</span>
+                            <span class="rank-points">${rank.points}P</span>
                         </div>
                     `;
-                    
+
                     rankingList.appendChild(li);
                 });
             } else {

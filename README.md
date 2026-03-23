@@ -29,8 +29,13 @@ service cloud.firestore {
       allow read: if true;
       allow write: if userId == request.resource.data.username;
     }
-    
-    match /rankings/{weekId} {
+
+    match /rankings/{seasonId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /history/{userId}/items/{itemId} {
       allow read: if true;
       allow write: if true;
     }
