@@ -56,7 +56,7 @@ const quizData = [
     {
         question: "髙地優吾の誕生日は？",
         options: ["3月8日", "6月8日", "9月8日", "12月8日"],
-        correct: 2,
+        correct: 0,
         difficulty: "中級"
     },
     {
@@ -93,7 +93,7 @@ const quizData = [
     {
         question: "SixTONES結成前、髙地優吾が所属していたJr.ユニットは？",
         options: ["B.I.Shadow", "Mis Snow Man", "Love-tune", "すべて"],
-        correct: 3,
+        correct: 0,
         difficulty: "上級"
     },
     {
@@ -229,24 +229,14 @@ const quizData = [
         correct: 0,
         difficulty: "初級"
     },
-    {
-        question: "SixTONESのメンバーで俳優活動が最も活発なのは？",
-        options: ["松村北斗", "京本大我", "ジェシー", "全員同じくらい"],
-        correct: 0,
-        difficulty: "初級"
-    },
+
     {
         question: "SixTONESの楽曲「僕が僕じゃないみたいだ」のジャンルは？",
         options: ["ロック", "バラード", "ダンス", "ラップ"],
         correct: 1,
         difficulty: "初級"
     },
-    {
-        question: "SixTONESのライブで定番の掛け声は？",
-        options: ["ストーンズ！", "シックストーンズ！", "SixTONES！", "決まっていない"],
-        correct: 3,
-        difficulty: "初級"
-    },
+
     // 中級 40問
     {
         question: "京本大我の誕生日は？",
@@ -317,34 +307,34 @@ const quizData = [
     {
         question: "SixTONESの2ndアルバムのタイトルは？",
         options: ["CITY", "VOICE", "TONE", "SOUND"],
-        correct: 1,
+        correct: 0,
         difficulty: "中級"
     },
     {
         question: "髙地優吾のジャニーズ事務所入所年は？",
         options: ["2009年", "2010年", "2011年", "2012年"],
-        correct: 1,
+        correct: 0,
         difficulty: "中級",
         randomizeOptions: false
     },
     {
         question: "京本大我のジャニーズ事務所入所年は？",
         options: ["2005年", "2006年", "2007年", "2008年"],
-        correct: 2,
+        correct: 1,
         difficulty: "中級",
         randomizeOptions: false
     },
     {
         question: "田中樹のジャニーズ事務所入所年は？",
         options: ["2007年", "2008年", "2009年", "2010年"],
-        correct: 2,
+        correct: 0,
         difficulty: "中級",
         randomizeOptions: false
     },
     {
         question: "松村北斗のジャニーズ事務所入所年は？",
         options: ["2008年", "2009年", "2010年", "2011年"],
-        correct: 3,
+        correct: 1,
         difficulty: "中級",
         randomizeOptions: false
     },
@@ -368,21 +358,11 @@ const quizData = [
         correct: 0,
         difficulty: "中級"
     },
-    {
-        question: "松村北斗が出演した映画「10の秘密」で共演した女優は？",
-        options: ["仲間由紀恵", "向井理", "両方出演", "どちらも違う"],
-        correct: 2,
-        difficulty: "中級"
-    },
-    {
-        question: "京本大我が主演を務めたミュージカルは？",
-        options: ["エリザベート", "レ・ミゼラブル", "オペラ座の怪人", "すべて"],
-        correct: 0,
-        difficulty: "中級"
-    },
+
+
     {
         question: "髙地優吾の特技は？",
-        options: ["歌", "ダンス", "アクロバット", "料理"],
+        options: ["歌", "ダンス", "ボイスパーカッション", "料理"],
         correct: 2,
         difficulty: "中級"
     },
@@ -392,12 +372,7 @@ const quizData = [
         correct: 0,
         difficulty: "中級"
     },
-    {
-        question: "田中樹の特技は？",
-        options: ["ラップ", "ベース", "ギター", "すべて"],
-        correct: 3,
-        difficulty: "中級"
-    },
+
     {
         question: "ジェシーの父親の国籍は？",
         options: ["アメリカ", "イギリス", "カナダ", "オーストラリア"],
@@ -412,30 +387,19 @@ const quizData = [
     },
     {
         question: "SixTONESの楽曲で最もYouTube再生回数が多いのは？（2024年時点）",
-        options: ["Imitation Rain", "NAVIGATOR", "マスカラ", "NEW ERA"],
-        correct: 0,
+        options: ["Imitation Rain", "NAVIGATOR", "こっから", "NEW ERA"],
+        correct: 2,
         difficulty: "中級"
     },
     {
         question: "SixTONESが初めてアリーナツアーを行ったのは？",
         options: ["2020年", "2021年", "2022年", "2023年"],
-        correct: 2,
+        correct: 0,
         difficulty: "中級",
         randomizeOptions: false
     },
-    {
-        question: "SixTONESの冠番組「SixTONES【夜】」のテーマは？",
-        options: ["バラエティ", "音楽", "トーク", "すべて"],
-        correct: 3,
-        difficulty: "中級"
-    },
-    {
-        question: "松村北斗が主演した映画「ホリミヤ」の公開年は？",
-        options: ["2020年", "2021年", "2022年", "2023年"],
-        correct: 1,
-        difficulty: "中級",
-        randomizeOptions: false
-    },
+
+
     {
         question: "京本大我の父親の名前は？",
         options: ["京本政樹", "京本雅樹", "京本正樹", "京本昌樹"],
@@ -539,25 +503,14 @@ const quizData = [
         correct: 0,
         difficulty: "上級"
     },
-    {
-        question: "髙地優吾が「ザ少年倶楽部」で担当していたコーナーは？",
-        options: ["MC", "ダンスコーナー", "アクロバットコーナー", "歌唱コーナー"],
-        correct: 2,
-        difficulty: "上級"
-    },
+
     {
         question: "松村北斗がモデルを務めた雑誌は？",
         options: ["anan", "non-no", "ViVi", "すべて"],
         correct: 3,
         difficulty: "上級"
     },
-    {
-        question: "SixTONESのYouTubeチャンネル開設日は？",
-        options: ["2019年1月1日", "2019年3月1日", "2019年5月1日", "2019年7月1日"],
-        correct: 1,
-        difficulty: "上級",
-        randomizeOptions: false
-    },
+
     {
         question: "田中樹がベースを弾き始めたきっかけは？",
         options: ["父親の影響", "兄弟の影響", "友人の影響", "自分から"],
@@ -577,16 +530,11 @@ const quizData = [
         correct: 1,
         difficulty: "上級"
     },
-    {
-        question: "森本慎太郎が「ザ!鉄腕!DASH!!」で担当した企画は？",
-        options: ["DASH島", "グリル厄介", "出張DASH村", "DASH海岸"],
-        correct: 1,
-        difficulty: "上級"
-    },
+
     {
         question: "髙地優吾の血液型は？",
         options: ["A型", "B型", "O型", "AB型"],
-        correct: 2,
+        correct: 0,
         difficulty: "上級"
     },
     {
@@ -601,13 +549,7 @@ const quizData = [
         correct: 3,
         difficulty: "上級"
     },
-    {
-        question: "SixTONESが初めて単独で武道館公演を行ったのは？",
-        options: ["2019年", "2020年", "2021年", "2022年"],
-        correct: 2,
-        difficulty: "上級",
-        randomizeOptions: false
-    },
+
     {
         question: "田中樹が尊敬するラッパーで、実際に共演したことがあるのは？",
         options: ["KREVA", "ZEEBRA", "AK-69", "すべて"],
