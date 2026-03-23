@@ -1,0 +1,20 @@
+name: Deploy to Firebase Hosting
+
+on:
+  push:
+    branches:
+      - main  # mainブランチへのpushで自動デプロイ
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Deploy to Firebase
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: sixtones-quiz
+          channelId: live
