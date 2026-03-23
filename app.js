@@ -654,25 +654,47 @@ const titles = [
     { rate: 0, title: "見習いンズ", comment: "", emoji: "🌱" }
 ];
 
-// クラス制（ポイント累計で昇格）
-const classThresholds = [
-    { minPoints: 1500, className: 'S Class' },
-    { minPoints: 700, className: 'A Class' },
-    { minPoints: 350, className: 'B Class' },
-    { minPoints: 150, className: 'C Class' },
-    { minPoints: 50, className: 'D Class' },
-    { minPoints: 0, className: 'E Class' }
+// ランク制（累計ポイントで昇格・降格なし）
+const rankThresholds = [
+    { minPoints: 1500, rankName: '最髙地優吾' },
+    { minPoints: 700, rankName: 'おやーンズ' },
+    { minPoints: 350, rankName: 'サタスペリスナー' },
+    { minPoints: 150, rankName: 'チムスト' },
+    { minPoints: 50, rankName: '見習いンズ' },
+    { minPoints: 0, rankName: '新規リスナー' }
 ];
 
-// クラス算出
-function getClassForPoints(points) {
-    for (const threshold of classThresholds) {
+// ランク算出
+function getRankForPoints(points) {
+    for (const threshold of rankThresholds) {
         if (points >= threshold.minPoints) {
-            return threshold.className;
+            return threshold.rankName;
         }
     }
-    return 'E Class';
+    return '新規リスナー';
 }
+
+// 難易度別ポイント
+function getPointsForDifficulty(difficulty) {
+    switch (difficulty) {
+        case '初級': return 1;
+        case '中級': return 2;
+        case '上級': return 3;
+        default: return 1;
+    }
+}
+
+// 絆クイズ設定
+const bondQuizConfig = {
+    '4級': { questions: 3, passLine: 1, stoneCost: 1, difficulties: ['初級'] },
+    '3級': { questions: 5, passLine: 2, stoneCost: 1, difficulties: ['初級', '中級'] },
+    '2級': { questions: 7, passLine: 3, stoneCost: 1, difficulties: ['初級', '中級', '上級'] },
+    '1級': { questions: 7, passLine: 5, stoneCost: 1, difficulties: ['中級', '上級'] },
+    '特級': { questions: 7, passLine: 7, stoneCost: 3, difficulties: ['上級'] }
+};
+
+// 絆級の順序（比較用）
+const gradeOrder = ['-', '4級', '3級', '2級', '1級', '特級'];
 
 // シーズンID取得（月単位）
 function getSeasonId() {
@@ -700,14 +722,21 @@ let score = 0;
 let timeLeft = 15;
 let timer = null;
 let isAnswered = false;
+let quizResults = []; // 各問題の結果を記録
+let currentDifficulty = 'ランダム'; // 選択中の難易度
+let currentMode = 'free'; // 'free' | 'bond'
+let currentGrade = ''; // 絆クイズの級
 let userStats = {
     points: 0,
     stones: 0,
-    class: 'E Class',
-    correctRate: 0,
+    rank: '新規リスナー',
+    correctCount: 0,
+    totalCount: 0,
     historyLimit: 5,
     loginBonusDate: null,
-    title: null
+    title: null,
+    seasonPoints: 0,
+    grade: '-'
 };
 let currentTitle = null;
 let newTitleAchieved = false;
@@ -720,8 +749,12 @@ async function init() {
         if (savedUsername) {
             username = savedUsername;
             await loadUserStats();
+            const gotBonus = await checkLoginBonus();
             showScreen('startScreen');
             updateStartScreen();
+            if (gotBonus) {
+                showLoginBonusNotice();
+            }
         } else {
             showScreen('usernameScreen');
         }
@@ -731,13 +764,40 @@ async function init() {
     }
 }
 
+// ログインボーナス通知
+function showLoginBonusNotice() {
+    const notice = document.getElementById('loginBonusNotice');
+    if (notice) {
+        notice.classList.remove('hidden');
+        setTimeout(() => notice.classList.add('hidden'), 3000);
+    }
+}
+
 // 画面表示の切り替え
 function showScreen(screenId) {
-    const screens = ['loadingScreen', 'usernameScreen', 'startScreen', 'quizScreen', 'resultScreen', 'rankingScreen'];
+    const screens = [
+        'loadingScreen', 'usernameScreen', 'startScreen',
+        'gameMenuScreen', 'quizScreen', 'resultScreen',
+        'bondQuizScreen', 'bondResultScreen',
+        'historyScreen', 'historyDetailScreen',
+        'profileScreen', 'toolScreen',
+        'rankingScreen', 'rankingHistoryScreen', 'oldRankingScreen'
+    ];
     screens.forEach(id => {
-        document.getElementById(id).classList.add('hidden');
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
     });
     document.getElementById(screenId).classList.remove('hidden');
+    window.scrollTo(0, 0);
+}
+
+// デフォルトのuserStats
+function getDefaultUserStats() {
+    return {
+        points: 0, stones: 0, rank: '新規リスナー',
+        correctCount: 0, totalCount: 0, historyLimit: 5,
+        loginBonusDate: null, title: null, seasonPoints: 0, grade: '-'
+    };
 }
 
 // ユーザー統計の読み込み
@@ -751,32 +811,23 @@ async function loadUserStats() {
             userStats = {
                 points: data.points || 0,
                 stones: data.stones || 0,
-                class: data.class || 'E Class',
-                correctRate: data.correctRate || 0,
+                rank: data.rank || '新規リスナー',
+                correctCount: data.correctCount || 0,
+                totalCount: data.totalCount || 0,
                 historyLimit: data.historyLimit || 5,
                 loginBonusDate: data.loginBonusDate || null,
-                title: data.title || null
+                title: data.title || null,
+                seasonPoints: data.seasonPoints || 0,
+                grade: data.grade || '-'
             };
             currentTitle = data.title || null;
         } else {
-            userStats = {
-                points: 0,
-                stones: 0,
-                class: 'E Class',
-                correctRate: 0,
-                historyLimit: 5,
-                loginBonusDate: null,
-                title: null
-            };
+            userStats = getDefaultUserStats();
             currentTitle = null;
         }
     } catch (error) {
         console.error('統計読み込みエラー:', error);
-        userStats = {
-            points: 0, stones: 0, class: 'E Class',
-            correctRate: 0, historyLimit: 5,
-            loginBonusDate: null, title: null
-        };
+        userStats = getDefaultUserStats();
         currentTitle = null;
     }
 }
@@ -789,11 +840,14 @@ async function saveUserStats() {
             username: username,
             points: userStats.points,
             stones: userStats.stones,
-            class: userStats.class,
-            correctRate: userStats.correctRate,
+            rank: userStats.rank,
+            correctCount: userStats.correctCount,
+            totalCount: userStats.totalCount,
             historyLimit: userStats.historyLimit,
             loginBonusDate: userStats.loginBonusDate,
             title: userStats.title,
+            seasonPoints: userStats.seasonPoints,
+            grade: userStats.grade,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
     } catch (error) {
@@ -802,22 +856,58 @@ async function saveUserStats() {
 }
 
 // クイズ履歴の保存
-async function saveHistory(questionData, selectedAnswer, isCorrect, earnedPoints) {
+async function saveHistory(questionData, userAnswer, isCorrect, earnedPoints, mode, grade) {
     try {
         const historyRef = db.collection('history').doc(username)
             .collection('items');
         await historyRef.add({
             question: questionData.question,
-            answer: questionData.options[selectedAnswer] || '時間切れ',
-            correct: isCorrect,
+            options: questionData.options,
+            correct: questionData.correct,
+            userAnswer: userAnswer,
+            isCorrect: isCorrect,
             points: earnedPoints,
             difficulty: questionData.difficulty,
             explanation: questionData.explanation || '',
+            mode: mode || 'free',
+            grade: grade || '',
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
     } catch (error) {
         console.error('履歴保存エラー:', error);
     }
+}
+
+// 履歴の読み込み
+async function loadHistory() {
+    try {
+        const historyRef = db.collection('history').doc(username)
+            .collection('items');
+        const snapshot = await historyRef
+            .orderBy('timestamp', 'desc')
+            .limit(userStats.historyLimit)
+            .get();
+        const items = [];
+        snapshot.forEach(doc => {
+            items.push({ id: doc.id, ...doc.data() });
+        });
+        return items;
+    } catch (error) {
+        console.error('履歴読み込みエラー:', error);
+        return [];
+    }
+}
+
+// ログインボーナスチェック
+async function checkLoginBonus() {
+    const today = new Date().toISOString().split('T')[0];
+    if (userStats.loginBonusDate !== today) {
+        userStats.stones += 1;
+        userStats.loginBonusDate = today;
+        await saveUserStats();
+        return true;
+    }
+    return false;
 }
 
 // 称号の取得
@@ -885,13 +975,13 @@ function showAnswerEffect(isCorrect) {
 function updateStartScreen() {
     document.getElementById('usernameDisplay').textContent = username;
 
-    // クラス・ポイント・ストーン表示
-    const classDisplay = document.getElementById('classDisplay');
-    if (classDisplay) classDisplay.textContent = userStats.class;
+    // ランク・ポイント・ストーン表示
+    const rankDisplay = document.getElementById('rankDisplay');
+    if (rankDisplay) rankDisplay.textContent = userStats.rank;
     const pointsDisplay = document.getElementById('pointsDisplay');
     if (pointsDisplay) pointsDisplay.textContent = userStats.points + 'P';
     const stonesDisplay = document.getElementById('stonesDisplay');
-    if (stonesDisplay) stonesDisplay.textContent = userStats.stones;
+    if (stonesDisplay) stonesDisplay.textContent = '💎 ' + userStats.stones;
 
     // 称号の表示
     const titleDisplay = document.getElementById('titleDisplay');
@@ -922,12 +1012,14 @@ document.getElementById('setUsernameBtn').addEventListener('click', async () => 
         alert('ユーザー名を入力してください');
         return;
     }
-    
+
     username = input;
     localStorage.setItem('sixtonesQuizUsername', username);
     await loadUserStats();
+    const gotBonus = await checkLoginBonus();
     showScreen('startScreen');
     updateStartScreen();
+    if (gotBonus) showLoginBonusNotice();
 });
 
 document.getElementById('usernameInput').addEventListener('keypress', (e) => {
@@ -949,12 +1041,12 @@ document.getElementById('saveUsernameBtn').addEventListener('click', async () =>
         alert('ユーザー名を入力してください');
         return;
     }
-    
+
     username = newUsername;
     localStorage.setItem('sixtonesQuizUsername', username);
     await loadUserStats();
     updateStartScreen();
-    
+
     document.getElementById('changeUsernameBtn').classList.remove('hidden');
     document.getElementById('usernameEditArea').classList.add('hidden');
 });
@@ -964,29 +1056,78 @@ document.getElementById('cancelUsernameBtn').addEventListener('click', () => {
     document.getElementById('usernameEditArea').classList.add('hidden');
 });
 
-// クイズ開始
+// ===== ホーム画面ボタン =====
 document.getElementById('startQuizBtn').addEventListener('click', () => {
-    startQuiz();
+    showScreen('gameMenuScreen');
 });
 
-// ランキング表示
 document.getElementById('viewRankingBtn').addEventListener('click', async () => {
     showScreen('rankingScreen');
     await loadAndShowStandaloneRanking();
 });
 
-// トップに戻る
-document.getElementById('backToTopBtn').addEventListener('click', () => {
+document.getElementById('viewHistoryBtn').addEventListener('click', async () => {
+    showScreen('historyScreen');
+    await showHistoryScreen();
+});
+
+document.getElementById('viewProfileBtn').addEventListener('click', () => {
+    showScreen('profileScreen');
+    updateProfileScreen();
+});
+
+document.getElementById('viewToolBtn').addEventListener('click', () => {
+    showScreen('toolScreen');
+    updateToolScreen();
+});
+
+// ===== ゲームメニュー画面 =====
+document.getElementById('backFromGameMenu').addEventListener('click', () => {
     showScreen('startScreen');
 });
 
-function startQuiz() {
-    const shuffled = [...quizData].sort(() => Math.random() - 0.5);
+// フリープレイ難易度ボタン
+['beginnerBtn', 'intermediateBtn', 'advancedBtn', 'randomBtn'].forEach(btnId => {
+    document.getElementById(btnId).addEventListener('click', () => {
+        const diffMap = {
+            'beginnerBtn': '初級',
+            'intermediateBtn': '中級',
+            'advancedBtn': '上級',
+            'randomBtn': 'ランダム'
+        };
+        startFreePlay(diffMap[btnId]);
+    });
+});
+
+// 絆クイズボタン
+document.getElementById('bondQuizBtn').addEventListener('click', () => {
+    showScreen('bondQuizScreen');
+    updateBondQuizScreen();
+});
+
+// ===== フリープレイ =====
+function startFreePlay(difficulty) {
+    currentMode = 'free';
+    currentDifficulty = difficulty;
+    currentGrade = '';
+    quizResults = [];
+
+    let filtered;
+    if (difficulty === 'ランダム') {
+        filtered = [...quizData];
+    } else {
+        filtered = quizData.filter(q => q.difficulty === difficulty);
+    }
+
+    const shuffled = filtered.sort(() => Math.random() - 0.5);
     currentQuestions = shuffled.slice(0, 10);
     currentQuestionIndex = 0;
     score = 0;
-    
+
     showScreen('quizScreen');
+    // フリープレイはタイマーなし
+    const timerEl = document.getElementById('timer');
+    if (timerEl) timerEl.classList.add('hidden');
     showQuestion();
 }
 
@@ -996,19 +1137,27 @@ function showQuestion() {
         finishQuiz();
         return;
     }
-    
+
     const question = currentQuestions[currentQuestionIndex];
-    
-    document.getElementById('questionCounter').textContent = 
-        `問題 ${currentQuestionIndex + 1}/10`;
+    const totalQ = currentQuestions.length;
+
+    document.getElementById('questionCounter').textContent =
+        `問題 ${currentQuestionIndex + 1}/${totalQ}`;
     document.getElementById('scoreDisplay').textContent = `正解: ${score}`;
     document.getElementById('questionText').textContent = question.question;
-    
+
+    // 解説ボタンを非表示にリセット
+    const explanationBtn = document.getElementById('explanationBtn');
+    if (explanationBtn) {
+        explanationBtn.classList.add('hidden');
+        explanationBtn.onclick = null;
+    }
+
     const optionsContainer = document.getElementById('optionsContainer');
     optionsContainer.innerHTML = '';
-    
+
     const shouldRandomize = question.randomizeOptions !== false;
-    
+
     let shuffledOptions;
     if (shouldRandomize) {
         shuffledOptions = question.options.map((option, index) => ({
@@ -1021,9 +1170,9 @@ function showQuestion() {
             originalIndex: index
         }));
     }
-    
+
     const correctDisplayIndex = shuffledOptions.findIndex(opt => opt.originalIndex === question.correct);
-    
+
     shuffledOptions.forEach((option, displayIndex) => {
         const optionDiv = document.createElement('div');
         optionDiv.className = 'option';
@@ -1031,39 +1180,44 @@ function showQuestion() {
         optionDiv.addEventListener('click', () => selectAnswer(option.originalIndex, displayIndex, correctDisplayIndex));
         optionsContainer.appendChild(optionDiv);
     });
-    
+
     isAnswered = false;
-    startTimer();
+
+    // 絆クイズのみタイマー
+    if (currentMode === 'bond') {
+        startTimer();
+    }
 }
 
-// タイマー開始
+// タイマー開始（絆クイズ専用）
 function startTimer() {
     timeLeft = 15;
     const timerEl = document.getElementById('timer');
+    timerEl.classList.remove('hidden');
     timerEl.textContent = timeLeft;
     timerEl.classList.remove('warning');
-    
+
     clearInterval(timer);
     timer = setInterval(() => {
         timeLeft--;
         timerEl.textContent = timeLeft;
-        
+
         if (timeLeft <= 3) {
             timerEl.classList.add('warning');
         }
-        
+
         if (timeLeft <= 0) {
             clearInterval(timer);
             const question = currentQuestions[currentQuestionIndex];
             const options = document.querySelectorAll('.option');
             let correctDisplayIndex = -1;
-            
+
             options.forEach((option, index) => {
                 if (option.textContent === question.options[question.correct]) {
                     correctDisplayIndex = index;
                 }
             });
-            
+
             selectAnswer(-1, -1, correctDisplayIndex);
         }
     }, 1000);
@@ -1072,24 +1226,31 @@ function startTimer() {
 // 回答選択
 function selectAnswer(originalIndex, displayIndex, correctDisplayIndex) {
     if (isAnswered) return;
-    
+
     isAnswered = true;
     clearInterval(timer);
-    
+
     const question = currentQuestions[currentQuestionIndex];
     const options = document.querySelectorAll('.option');
-    
+
     options.forEach(option => option.classList.add('disabled'));
-    
+
     const isCorrect = originalIndex === question.correct;
-    
+
+    // 結果を記録
+    quizResults.push({
+        question: question,
+        userAnswer: originalIndex,
+        isCorrect: isCorrect
+    });
+
     if (isCorrect) {
         if (displayIndex >= 0) {
             options[displayIndex].classList.add('correct');
         }
         score++;
         document.getElementById('scoreDisplay').textContent = `正解: ${score}`;
-        
+
         playSound('correct');
         showAnswerEffect(true);
     } else {
@@ -1097,96 +1258,143 @@ function selectAnswer(originalIndex, displayIndex, correctDisplayIndex) {
             options[displayIndex].classList.add('wrong');
         }
         options[correctDisplayIndex].classList.add('correct');
-        
+
         playSound('wrong');
         showAnswerEffect(false);
     }
-    
-    setTimeout(() => {
-        currentQuestionIndex++;
-        if (currentQuestionIndex >= currentQuestions.length) {
-            finishQuiz();
-        } else {
-            showQuestion();
+
+    // 回答後に解説ボタン表示（explanationが空でない場合）
+    const explanationBtn = document.getElementById('explanationBtn');
+    if (explanationBtn && question.explanation) {
+        explanationBtn.classList.remove('hidden');
+        explanationBtn.onclick = () => showExplanationModal(question.explanation);
+    }
+
+    // フリープレイは手動で次へ（解説を読む時間を確保）
+    if (currentMode === 'free') {
+        const nextBtn = document.getElementById('nextQuestionBtn');
+        if (nextBtn) {
+            nextBtn.classList.remove('hidden');
+            nextBtn.onclick = () => {
+                nextBtn.classList.add('hidden');
+                if (explanationBtn) explanationBtn.classList.add('hidden');
+                currentQuestionIndex++;
+                if (currentQuestionIndex >= currentQuestions.length) {
+                    finishQuiz();
+                } else {
+                    showQuestion();
+                }
+            };
         }
-    }, 1500);
+    } else {
+        // 絆クイズは自動で次へ
+        setTimeout(() => {
+            if (explanationBtn) explanationBtn.classList.add('hidden');
+            currentQuestionIndex++;
+            if (currentQuestionIndex >= currentQuestions.length) {
+                finishBondQuiz();
+            } else {
+                showQuestion();
+            }
+        }, 1500);
+    }
 }
 
-// クイズ終了
-async function finishQuiz() {
-    console.log('finishQuiz開始');
+// 解説モーダル表示
+function showExplanationModal(text) {
+    const modal = document.getElementById('explanationModal');
+    const modalText = document.getElementById('explanationText');
+    if (modal && modalText) {
+        modalText.textContent = text;
+        modal.classList.remove('hidden');
+    }
+}
 
-    showResultScreenWithCurrentData();
+// 解説モーダル閉じる
+document.getElementById('closeExplanationBtn')?.addEventListener('click', () => {
+    document.getElementById('explanationModal').classList.add('hidden');
+});
+
+// ===== フリープレイ終了 =====
+async function finishQuiz() {
+    showScreen('resultScreen');
+
+    // 難易度別ポイント計算
+    let earnedPoints = 0;
+    quizResults.forEach(result => {
+        if (result.isCorrect) {
+            earnedPoints += getPointsForDifficulty(result.question.difficulty);
+        }
+    });
+
+    userStats.points += earnedPoints;
+    userStats.seasonPoints += earnedPoints;
+    userStats.correctCount += score;
+    userStats.totalCount += currentQuestions.length;
+    userStats.rank = getRankForPoints(userStats.points);
+
+    // 称号判定
+    const overallRate = userStats.totalCount > 0
+        ? (userStats.correctCount / userStats.totalCount) * 100 : 0;
+    const newTitle = getTitleForRate(overallRate);
+    const oldTitleRate = currentTitle ? currentTitle.rate : -1;
+    newTitleAchieved = newTitle.rate > oldTitleRate;
+
+    if (newTitleAchieved || !currentTitle) {
+        currentTitle = newTitle;
+        userStats.title = currentTitle;
+    }
+
+    // 結果画面表示
+    showResultScreenWithCurrentData(earnedPoints);
+    updateResultScreenWithTitle();
 
     try {
-        // ポイント加算（フリープレイ: 初級+1, 中級+2, 上級+3）
-        let earnedPoints = 0;
-        currentQuestions.forEach((q, i) => {
-            // 各問題の正解状況はquizResultsに記録されている
-        });
+        await saveUserStats();
 
-        // 簡易計算: scoreから難易度別ポイントは後続画面実装時に詳細化
-        // 現時点ではフリープレイの正解数ベースでポイント加算
-        earnedPoints = score; // 暫定: 1問1P（難易度別は画面実装時に対応）
-        userStats.points += earnedPoints;
-        userStats.stones += score; // 正解1問ごとに1個
-        userStats.class = getClassForPoints(userStats.points);
-
-        const newTitle = getTitleForRate(score * 10); // 10問中のスコアを%に
-        const oldTitleRate = currentTitle ? currentTitle.rate : -1;
-        newTitleAchieved = newTitle.rate > oldTitleRate;
-
-        if (newTitleAchieved || !currentTitle) {
-            currentTitle = newTitle;
-            userStats.title = currentTitle;
+        // 履歴保存
+        for (const result of quizResults) {
+            const pts = result.isCorrect ? getPointsForDifficulty(result.question.difficulty) : 0;
+            await saveHistory(result.question, result.userAnswer, result.isCorrect, pts, 'free', '');
         }
 
-        await saveUserStats();
-        console.log('Firestore保存完了');
-
         await updateRanking();
-        console.log('ランキング更新完了');
-
-        updateResultScreenWithTitle();
         await loadAndShowRanking();
-        console.log('ランキング表示完了');
     } catch (error) {
         console.error('クイズ終了処理エラー:', error);
     }
 }
 
 // 結果画面を現在のデータで表示
-function showResultScreenWithCurrentData() {
-    showScreen('resultScreen');
-    
-    document.getElementById('resultScore').textContent = `${score} / 10`;
-    
+function showResultScreenWithCurrentData(earnedPoints) {
+    const totalQ = currentQuestions.length;
+    document.getElementById('resultScore').textContent = `${score} / ${totalQ}`;
+
     let emoji, message;
-    if (score === 10) {
+    const rate = score / totalQ;
+    if (rate === 1) {
         emoji = '🏆';
         message = '完璧！SixTONESマスターだね！';
-    } else if (score >= 8) {
+    } else if (rate >= 0.8) {
         emoji = '🎉';
         message = 'すごい！SixTONES通だね！';
-    } else if (score >= 6) {
+    } else if (rate >= 0.6) {
         emoji = '😊';
         message = 'いい感じ！もう少し！';
-    } else if (score >= 4) {
+    } else if (rate >= 0.4) {
         emoji = '🤔';
-        message: 'まあまあかな。もっと知ろう！';
+        message = 'まあまあかな。もっと知ろう！';
     } else {
         emoji = '😅';
         message = 'もっとSixTONESのこと知ってね！';
     }
-    
+
     document.getElementById('resultEmoji').textContent = emoji;
     document.getElementById('resultMessage').textContent = message;
-    
+
     const resultPoints = document.getElementById('resultPoints');
-    if (resultPoints) resultPoints.textContent = `+${score}P (合計: ${userStats.points + score}P)`;
-    const resultStones = document.getElementById('resultStones');
-    if (resultStones) resultStones.textContent = `+${score} (合計: ${userStats.stones + score})`;
-    
+    if (resultPoints) resultPoints.textContent = `+${earnedPoints || 0}P (合計: ${userStats.points}P)`;
+
     document.getElementById('titleAchievement').classList.add('hidden');
 }
 
@@ -1211,7 +1419,276 @@ function updateResultScreenWithTitle() {
     }
 }
 
-// ランキング更新（月次シーズン制）
+// ===== 絆クイズ =====
+function updateBondQuizScreen() {
+    const grades = ['4級', '3級', '2級', '1級', '特級'];
+    grades.forEach(grade => {
+        const btn = document.getElementById(`bond${grade}Btn`);
+        if (!btn) return;
+        const config = bondQuizConfig[grade];
+        const hasStones = userStats.stones >= config.stoneCost;
+
+        btn.disabled = !hasStones;
+        btn.classList.toggle('disabled-btn', !hasStones);
+
+        const costLabel = btn.querySelector('.stone-cost');
+        if (costLabel) costLabel.textContent = `💎${config.stoneCost}`;
+    });
+
+    const stoneInfo = document.getElementById('bondStoneInfo');
+    if (stoneInfo) stoneInfo.textContent = `所持ストーン: 💎${userStats.stones}`;
+}
+
+function startBondQuiz(grade) {
+    const config = bondQuizConfig[grade];
+    if (userStats.stones < config.stoneCost) {
+        alert('ストーンが不足しています');
+        return;
+    }
+
+    // ストーン消費
+    userStats.stones -= config.stoneCost;
+    currentMode = 'bond';
+    currentGrade = grade;
+    quizResults = [];
+
+    // 難易度でフィルタリング
+    let filtered = quizData.filter(q => config.difficulties.includes(q.difficulty));
+    const shuffled = filtered.sort(() => Math.random() - 0.5);
+    currentQuestions = shuffled.slice(0, config.questions);
+    currentQuestionIndex = 0;
+    score = 0;
+
+    showScreen('quizScreen');
+    const timerEl = document.getElementById('timer');
+    if (timerEl) timerEl.classList.remove('hidden');
+    showQuestion();
+}
+
+// 絆クイズ級ボタンのイベント
+['4級', '3級', '2級', '1級', '特級'].forEach(grade => {
+    const btn = document.getElementById(`bond${grade}Btn`);
+    if (btn) btn.addEventListener('click', () => startBondQuiz(grade));
+});
+
+document.getElementById('backFromBondQuiz')?.addEventListener('click', () => {
+    showScreen('gameMenuScreen');
+});
+
+// 絆クイズ終了
+async function finishBondQuiz() {
+    const config = bondQuizConfig[currentGrade];
+    const passed = score >= config.passLine;
+
+    // 絆クイズではポイントは獲得しない（仕様上記載なし）
+    // 正解数・回答数は加算
+    userStats.correctCount += score;
+    userStats.totalCount += currentQuestions.length;
+
+    // 合格時に最高級を更新
+    if (passed) {
+        const currentGradeIndex = gradeOrder.indexOf(userStats.grade);
+        const newGradeIndex = gradeOrder.indexOf(currentGrade);
+        if (newGradeIndex > currentGradeIndex) {
+            userStats.grade = currentGrade;
+        }
+    }
+
+    showScreen('bondResultScreen');
+    document.getElementById('bondResultGrade').textContent = currentGrade;
+    document.getElementById('bondResultScore').textContent = `${score} / ${config.questions}`;
+    document.getElementById('bondResultPassLine').textContent = `合格ライン: ${config.passLine}問正解`;
+
+    if (passed) {
+        document.getElementById('bondResultStatus').textContent = '🎊 合格！ 🎊';
+        document.getElementById('bondResultStatus').className = 'bond-result-pass';
+        document.getElementById('bondShareBtn').classList.remove('hidden');
+    } else {
+        document.getElementById('bondResultStatus').textContent = '不合格...';
+        document.getElementById('bondResultStatus').className = 'bond-result-fail';
+        document.getElementById('bondShareBtn').classList.add('hidden');
+    }
+
+    try {
+        await saveUserStats();
+
+        for (const result of quizResults) {
+            await saveHistory(result.question, result.userAnswer, result.isCorrect, 0, 'bond', currentGrade);
+        }
+
+        await updateRanking();
+    } catch (error) {
+        console.error('絆クイズ終了処理エラー:', error);
+    }
+}
+
+document.getElementById('bondBackToMenuBtn')?.addEventListener('click', () => {
+    showScreen('startScreen');
+    updateStartScreen();
+});
+
+// ===== 履歴画面 =====
+async function showHistoryScreen() {
+    const items = await loadHistory();
+    const list = document.getElementById('historyList');
+    list.innerHTML = '';
+
+    if (items.length === 0) {
+        list.innerHTML = '<li class="no-data">履歴がありません</li>';
+        return;
+    }
+
+    items.forEach(item => {
+        const li = document.createElement('li');
+        li.className = 'history-item';
+        li.innerHTML = `
+            <div class="history-question">${item.question}</div>
+            <div class="history-meta">
+                <span class="${item.isCorrect ? 'correct-mark' : 'wrong-mark'}">${item.isCorrect ? '⭕' : '❌'}</span>
+                <span>${item.difficulty}</span>
+                <span>${item.points}P</span>
+                ${item.mode === 'bond' ? `<span class="bond-badge">${item.grade}</span>` : ''}
+            </div>
+        `;
+        li.addEventListener('click', () => showHistoryDetail(item));
+        list.appendChild(li);
+    });
+}
+
+function showHistoryDetail(item) {
+    showScreen('historyDetailScreen');
+    document.getElementById('historyDetailQuestion').textContent = item.question;
+
+    const optionsList = document.getElementById('historyDetailOptions');
+    optionsList.innerHTML = '';
+    if (item.options) {
+        item.options.forEach((opt, i) => {
+            const li = document.createElement('li');
+            li.textContent = opt;
+            if (i === item.correct) li.classList.add('correct-option');
+            if (i === item.userAnswer && !item.isCorrect) li.classList.add('wrong-option');
+            optionsList.appendChild(li);
+        });
+    }
+
+    document.getElementById('historyDetailResult').textContent = item.isCorrect ? '正解' : '不正解';
+    document.getElementById('historyDetailResult').className = item.isCorrect ? 'correct-mark' : 'wrong-mark';
+    document.getElementById('historyDetailPoints').textContent = `${item.points}P`;
+    document.getElementById('historyDetailDifficulty').textContent = item.difficulty;
+    document.getElementById('historyDetailMode').textContent = item.mode === 'bond' ? `絆クイズ（${item.grade}）` : 'フリープレイ';
+
+    const explanationArea = document.getElementById('historyDetailExplanation');
+    if (item.explanation) {
+        explanationArea.textContent = item.explanation;
+        explanationArea.classList.remove('hidden');
+    } else {
+        explanationArea.classList.add('hidden');
+    }
+
+    const ts = item.timestamp?.toDate ? item.timestamp.toDate() : new Date();
+    document.getElementById('historyDetailDate').textContent = ts.toLocaleString('ja-JP');
+}
+
+document.getElementById('backFromHistory')?.addEventListener('click', () => {
+    showScreen('startScreen');
+});
+
+document.getElementById('backFromHistoryDetail')?.addEventListener('click', () => {
+    showScreen('historyScreen');
+});
+
+// ===== プロフィール画面 =====
+function updateProfileScreen() {
+    document.getElementById('profileUsername').textContent = username;
+    document.getElementById('profileRank').textContent = userStats.rank;
+    document.getElementById('profilePoints').textContent = userStats.points + 'P';
+    document.getElementById('profileSeasonPoints').textContent = userStats.seasonPoints + 'P';
+    const rate = userStats.totalCount > 0
+        ? ((userStats.correctCount / userStats.totalCount) * 100).toFixed(1) : '0.0';
+    document.getElementById('profileCorrectRate').textContent = rate + '%';
+    document.getElementById('profileGrade').textContent = userStats.grade;
+    document.getElementById('profileStones').textContent = '💎 ' + userStats.stones;
+}
+
+document.getElementById('backFromProfile')?.addEventListener('click', () => {
+    showScreen('startScreen');
+});
+
+// ===== ツール画面 =====
+function updateToolScreen() {
+    const currentLimit = document.getElementById('toolCurrentLimit');
+    if (currentLimit) currentLimit.textContent = `現在の履歴表示件数: ${userStats.historyLimit}件`;
+
+    const expandBtn = document.getElementById('expandHistoryBtn');
+    if (expandBtn) {
+        const canExpand = userStats.stones >= 5 && userStats.historyLimit < 100;
+        expandBtn.disabled = !canExpand;
+        expandBtn.classList.toggle('disabled-btn', !canExpand);
+
+        if (userStats.historyLimit >= 100) {
+            expandBtn.textContent = '上限に達しています';
+        } else if (userStats.stones < 5) {
+            expandBtn.textContent = '💎5個 → +5件（ストーン不足）';
+        } else {
+            expandBtn.textContent = '💎5個 → +5件 拡張する';
+        }
+    }
+
+    const toolStoneInfo = document.getElementById('toolStoneInfo');
+    if (toolStoneInfo) toolStoneInfo.textContent = `所持ストーン: 💎${userStats.stones}`;
+}
+
+document.getElementById('expandHistoryBtn')?.addEventListener('click', async () => {
+    if (userStats.stones < 5 || userStats.historyLimit >= 100) return;
+
+    userStats.stones -= 5;
+    userStats.historyLimit = Math.min(userStats.historyLimit + 5, 100);
+    await saveUserStats();
+    updateToolScreen();
+});
+
+document.getElementById('backFromTool')?.addEventListener('click', () => {
+    showScreen('startScreen');
+});
+
+// ===== ランキング画面 =====
+document.getElementById('backFromRanking')?.addEventListener('click', () => {
+    showScreen('startScreen');
+});
+
+document.getElementById('viewRankingHistory')?.addEventListener('click', async () => {
+    showScreen('rankingHistoryScreen');
+    await loadRankingHistory();
+});
+
+document.getElementById('backFromRankingHistory')?.addEventListener('click', () => {
+    showScreen('rankingScreen');
+});
+
+document.getElementById('backFromOldRanking')?.addEventListener('click', () => {
+    showScreen('rankingHistoryScreen');
+});
+
+// ===== SNSシェア（X） =====
+function shareToX(text) {
+    const url = encodeURIComponent(window.location.href);
+    const encodedText = encodeURIComponent(text);
+    window.open(`https://twitter.com/intent/tweet?text=${encodedText}&url=${url}`, '_blank');
+}
+
+// 絆クイズ合格時のシェア
+document.getElementById('bondShareBtn')?.addEventListener('click', () => {
+    const text = `SixTONESクイズで【${currentGrade}】に合格しました！💎\n正解率: ${score}/${bondQuizConfig[currentGrade].questions}問\n#SixTONESクイズ #SixTONES`;
+    shareToX(text);
+});
+
+// プロフィール画面のシェア
+document.getElementById('profileShareBtn')?.addEventListener('click', () => {
+    const text = `SixTONESクイズ 今シーズンの成績📊\nランク: ${userStats.rank}\nポイント: ${userStats.seasonPoints}P\n最高絆級: ${userStats.grade}\n#SixTONESクイズ #SixTONES`;
+    shareToX(text);
+});
+
+// ランキング更新（月次シーズン制・seasonPointsで順位付け）
 async function updateRanking() {
     try {
         const seasonId = getSeasonId();
@@ -1227,9 +1704,9 @@ async function updateRanking() {
         const existingIndex = rankings.findIndex(r => r.username === username);
         const userData = {
             username: username,
-            points: userStats.points,
-            class: userStats.class,
-            grade: null
+            points: userStats.seasonPoints,
+            rank: userStats.rank,
+            grade: userStats.grade
         };
 
         if (existingIndex >= 0) {
@@ -1243,7 +1720,8 @@ async function updateRanking() {
 
         await rankingDocRef.set({
             seasonNumber: getSeasonNumber(),
-            endsAt: firebase.firestore.Timestamp.fromDate(getSeasonEndDate()),
+            seasonId: seasonId,
+            endsAt: getSeasonEndDate().toISOString(),
             data: rankings,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
@@ -1252,7 +1730,48 @@ async function updateRanking() {
     }
 }
 
-// ランキング読み込みと表示
+// ランキングHTML生成（共通）
+function renderRankingItems(rankings, listEl, noDataEl, limit) {
+    const items = rankings.slice(0, limit || 50);
+    if (items.length > 0) {
+        listEl.innerHTML = '';
+        noDataEl.classList.add('hidden');
+
+        items.forEach((entry, index) => {
+            const li = document.createElement('li');
+            li.className = 'ranking-item';
+
+            if (index === 0) li.classList.add('first');
+            else if (index === 1) li.classList.add('second');
+            else if (index === 2) li.classList.add('third');
+
+            if (entry.username === username) {
+                li.classList.add('current');
+            }
+
+            li.innerHTML = `
+                <div>
+                    <span class="rank-number">${index + 1}位</span>
+                    <span class="rank-username">
+                        ${entry.username}${entry.username === username ? ' (あなた)' : ''}
+                    </span>
+                </div>
+                <div>
+                    <span class="rank-rank">${entry.rank || ''}</span>
+                    <span class="rank-points">${entry.points}P</span>
+                    ${entry.grade && entry.grade !== '-' ? `<span class="rank-grade">${entry.grade}</span>` : ''}
+                </div>
+            `;
+
+            listEl.appendChild(li);
+        });
+    } else {
+        listEl.innerHTML = '';
+        noDataEl.classList.remove('hidden');
+    }
+}
+
+// ランキング読み込みと表示（結果画面用）
 async function loadAndShowRanking() {
     try {
         const seasonId = getSeasonId();
@@ -1263,44 +1782,7 @@ async function loadAndShowRanking() {
         const noRanking = document.getElementById('noRanking');
 
         if (rankingDoc.exists) {
-            const rankings = rankingDoc.data().data || [];
-            const top10 = rankings.slice(0, 10);
-
-            if (top10.length > 0) {
-                rankingList.innerHTML = '';
-                noRanking.classList.add('hidden');
-
-                top10.forEach((rank, index) => {
-                    const li = document.createElement('li');
-                    li.className = 'ranking-item';
-
-                    if (index === 0) li.classList.add('first');
-                    else if (index === 1) li.classList.add('second');
-                    else if (index === 2) li.classList.add('third');
-
-                    if (rank.username === username) {
-                        li.classList.add('current');
-                    }
-
-                    li.innerHTML = `
-                        <div>
-                            <span class="rank-number">${index + 1}位</span>
-                            <span class="rank-username">
-                                ${rank.username}${rank.username === username ? ' (あなた)' : ''}
-                            </span>
-                        </div>
-                        <div>
-                            <span class="rank-class">${rank.class}</span>
-                            <span class="rank-points">${rank.points}P</span>
-                        </div>
-                    `;
-
-                    rankingList.appendChild(li);
-                });
-            } else {
-                rankingList.innerHTML = '';
-                noRanking.classList.remove('hidden');
-            }
+            renderRankingItems(rankingDoc.data().data || [], rankingList, noRanking, 10);
         } else {
             rankingList.innerHTML = '';
             noRanking.classList.remove('hidden');
@@ -1311,55 +1793,21 @@ async function loadAndShowRanking() {
     }
 }
 
-// スタンドアロンランキング表示（トップ画面から呼ばれる）
+// ランキング画面表示（上位50位）
 async function loadAndShowStandaloneRanking() {
     try {
         const seasonId = getSeasonId();
+        const seasonNum = getSeasonNumber();
         const rankingDocRef = db.collection('rankings').doc(seasonId);
         const rankingDoc = await rankingDocRef.get();
 
         const rankingList = document.getElementById('rankingListStandalone');
         const noRanking = document.getElementById('noRankingStandalone');
+        const seasonTitle = document.getElementById('rankingSeasonTitle');
+        if (seasonTitle) seasonTitle.textContent = `第${seasonNum}シーズン`;
 
         if (rankingDoc.exists) {
-            const rankings = rankingDoc.data().data || [];
-            const top10 = rankings.slice(0, 10);
-
-            if (top10.length > 0) {
-                rankingList.innerHTML = '';
-                noRanking.classList.add('hidden');
-
-                top10.forEach((rank, index) => {
-                    const li = document.createElement('li');
-                    li.className = 'ranking-item';
-
-                    if (index === 0) li.classList.add('first');
-                    else if (index === 1) li.classList.add('second');
-                    else if (index === 2) li.classList.add('third');
-
-                    if (rank.username === username) {
-                        li.classList.add('current');
-                    }
-
-                    li.innerHTML = `
-                        <div>
-                            <span class="rank-number">${index + 1}位</span>
-                            <span class="rank-username">
-                                ${rank.username}${rank.username === username ? ' (あなた)' : ''}
-                            </span>
-                        </div>
-                        <div>
-                            <span class="rank-class">${rank.class}</span>
-                            <span class="rank-points">${rank.points}P</span>
-                        </div>
-                    `;
-
-                    rankingList.appendChild(li);
-                });
-            } else {
-                rankingList.innerHTML = '';
-                noRanking.classList.remove('hidden');
-            }
+            renderRankingItems(rankingDoc.data().data || [], rankingList, noRanking, 50);
         } else {
             rankingList.innerHTML = '';
             noRanking.classList.remove('hidden');
@@ -1368,6 +1816,48 @@ async function loadAndShowStandaloneRanking() {
         console.error('ランキング読み込みエラー:', error);
         document.getElementById('noRankingStandalone').classList.remove('hidden');
     }
+}
+
+// 過去シーズン一覧の読み込み
+async function loadRankingHistory() {
+    try {
+        const currentSeasonId = getSeasonId();
+        const rankingsRef = db.collection('rankings');
+        const snapshot = await rankingsRef
+            .orderBy('seasonNumber', 'desc')
+            .limit(12)
+            .get();
+
+        const list = document.getElementById('rankingHistoryList');
+        list.innerHTML = '';
+
+        snapshot.forEach(doc => {
+            if (doc.id === currentSeasonId) return; // 現シーズンはスキップ
+            const data = doc.data();
+            const li = document.createElement('li');
+            li.className = 'ranking-history-item';
+            li.textContent = `第${data.seasonNumber}シーズン（${doc.id}）`;
+            li.addEventListener('click', () => showOldRanking(doc.id, data));
+            list.appendChild(li);
+        });
+
+        if (list.children.length === 0) {
+            list.innerHTML = '<li class="no-data">過去のシーズンデータはまだありません</li>';
+        }
+    } catch (error) {
+        console.error('過去ランキング読み込みエラー:', error);
+    }
+}
+
+// 過去ランキング表示
+function showOldRanking(seasonId, data) {
+    showScreen('oldRankingScreen');
+    document.getElementById('oldRankingTitle').textContent =
+        `第${data.seasonNumber}シーズン（${seasonId}）`;
+
+    const list = document.getElementById('oldRankingList');
+    const noData = document.getElementById('noOldRanking');
+    renderRankingItems((data.data || []).slice(0, 20), list, noData, 20);
 }
 
 // もう一回やるボタン
