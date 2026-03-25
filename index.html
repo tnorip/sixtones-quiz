@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SixTONESクイズ - 君はどこまで知ってる？</title>
-    <meta name="description" content="SixTONESに関する10問のクイズに挑戦！全国ランキングで競おう！">
+    <meta name="description" content="SixTONESに関するクイズに挑戦！全国ランキングで競おう！">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -12,7 +12,7 @@
     <div class="container">
         <div class="header">
             <h1>💎 SixTONES💎クイズ</h1>
-            <p>君はどこまで知ってる？全問正解目指そう！</p>
+            <p>君はどこまで知ってる？</p>
         </div>
 
         <div class="screen">
@@ -31,10 +31,10 @@
                     まずはユーザー名を設定してください<br/>
                     全国ランキングに表示されます
                 </p>
-                <input 
-                    type="text" 
-                    id="usernameInput" 
-                    class="input" 
+                <input
+                    type="text"
+                    id="usernameInput"
+                    class="input"
                     placeholder="ユーザー名を入力"
                     maxlength="20"
                 />
@@ -43,15 +43,15 @@
                 </button>
             </div>
 
-            <!-- スタート画面 -->
+            <!-- ホーム画面（startScreen） -->
             <div id="startScreen" class="center-screen hidden">
                 <h2 class="title">Welcome <span id="usernameDisplay"></span>!</h2>
-                
+
                 <div id="usernameEditArea" class="hidden">
-                    <input 
-                        type="text" 
-                        id="usernameEditInput" 
-                        class="input" 
+                    <input
+                        type="text"
+                        id="usernameEditInput"
+                        class="input"
                         maxlength="20"
                     />
                     <button id="saveUsernameBtn" class="small-btn">変更</button>
@@ -59,57 +59,116 @@
                 </div>
                 <button id="changeUsernameBtn" class="change-username-btn">ユーザー名を変更</button>
 
+                <!-- ログインボーナス通知 -->
+                <div id="loginBonusNotice" class="login-bonus-notice hidden">
+                    💎 ログインボーナス +1個！
+                </div>
+
+                <!-- ランク・ポイント・ストーン -->
+                <div class="stats-box home-stats">
+                    <div class="stat-item">
+                        <div class="stat-label">ランク</div>
+                        <div class="stat-value" id="rankDisplay">新規リスナー</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">ポイント</div>
+                        <div class="stat-value" id="pointsDisplay">0P</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">ストーン</div>
+                        <div class="stat-value" id="stonesDisplay">💎 0</div>
+                    </div>
+                </div>
+
                 <!-- 称号表示 -->
                 <div id="titleDisplay" class="title-display hidden"></div>
 
-                <div class="stats-box">
-                    <div class="stat-item">
-                        <div class="stat-label">今週の正答率</div>
-                        <div class="stat-value" id="weeklyRate">0.0%</div>
-                        <div class="stat-detail" id="weeklyDetail">(0 / 0)</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">最高正答率</div>
-                        <div class="stat-value" id="bestRate">0.0%</div>
+                <div class="home-buttons">
+                    <button id="startQuizBtn" class="btn">
+                        <span>🎮 クイズで遊ぶ</span>
+                    </button>
+                    <button id="viewHistoryBtn" class="btn-secondary">
+                        <span>📋 クイズ履歴</span>
+                    </button>
+                    <button id="viewProfileBtn" class="btn-secondary">
+                        <span>👤 プロフィール</span>
+                    </button>
+                    <button id="viewToolBtn" class="btn-secondary">
+                        <span>🔧 ツール</span>
+                    </button>
+                    <button id="viewRankingBtn" class="btn-secondary">
+                        <span>🏆 ランキング</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ゲームメニュー画面（gameMenuScreen） -->
+            <div id="gameMenuScreen" class="center-screen hidden">
+                <h2 class="title">ゲームメニュー</h2>
+
+                <div class="menu-section">
+                    <h3 class="menu-section-title">フリープレイ</h3>
+                    <p class="menu-description">タイマーなし・10問・解説あり</p>
+                    <div class="difficulty-buttons">
+                        <button id="beginnerBtn" class="btn-difficulty beginner">初級 (+1P)</button>
+                        <button id="intermediateBtn" class="btn-difficulty intermediate">中級 (+2P)</button>
+                        <button id="advancedBtn" class="btn-difficulty advanced">上級 (+3P)</button>
+                        <button id="randomBtn" class="btn-difficulty random">ランダム</button>
                     </div>
                 </div>
 
-                <p class="description">
-                    SixTONESに関する10問のクイズに挑戦！<br/>
-                    各問題は15秒以内に答えてね<br/>
-                    難易度はバラバラだから頑張って！
-                </p>
-                
-                <button id="startQuizBtn" class="btn">
-                    <span>スタート</span>
-                </button>
-                
-                <button id="viewRankingBtn" class="btn-secondary">
-                    <span>🏆 ランキングを見る</span>
-                </button>
-            </div>
-
-            <!-- ランキング画面 -->
-            <div id="rankingScreen" class="center-screen hidden">
-                <h2 class="title">全国ランキング</h2>
-                
-                <div class="ranking">
-                    <h3 class="ranking-title">🏆 TOP 10</h3>
-                    <p class="ranking-note">※毎週月曜日0時にリセット</p>
-                    <ul class="ranking-list" id="rankingListStandalone"></ul>
-                    <p id="noRankingStandalone" class="no-ranking hidden">まだランキングがありません</p>
+                <div class="menu-section">
+                    <h3 class="menu-section-title">絆クイズ</h3>
+                    <p class="menu-description">15秒タイマー・合格でランク認定</p>
+                    <button id="bondQuizBtn" class="btn">
+                        <span>💎 絆クイズに挑戦</span>
+                    </button>
                 </div>
-                
-                <button id="backToTopBtn" class="btn">
-                    <span>トップに戻る</span>
-                </button>
+
+                <button id="backFromGameMenu" class="btn-back">← ホームに戻る</button>
             </div>
 
-            <!-- クイズ画面 -->
+            <!-- 絆クイズ級選択画面（bondQuizScreen） -->
+            <div id="bondQuizScreen" class="center-screen hidden">
+                <h2 class="title">絆クイズ</h2>
+                <p id="bondStoneInfo" class="stone-info">所持ストーン: 💎0</p>
+
+                <div class="bond-grade-list">
+                    <button id="bond4級Btn" class="btn-bond">
+                        <div class="bond-grade-name">4級</div>
+                        <div class="bond-grade-info">3問 / 合格: 1問正解 / 初級のみ</div>
+                        <div class="stone-cost">💎1</div>
+                    </button>
+                    <button id="bond3級Btn" class="btn-bond">
+                        <div class="bond-grade-name">3級</div>
+                        <div class="bond-grade-info">5問 / 合格: 2問正解 / 初級+中級</div>
+                        <div class="stone-cost">💎1</div>
+                    </button>
+                    <button id="bond2級Btn" class="btn-bond">
+                        <div class="bond-grade-name">2級</div>
+                        <div class="bond-grade-info">7問 / 合格: 3問正解 / 全難易度</div>
+                        <div class="stone-cost">💎1</div>
+                    </button>
+                    <button id="bond1級Btn" class="btn-bond">
+                        <div class="bond-grade-name">1級</div>
+                        <div class="bond-grade-info">7問 / 合格: 5問正解 / 中級+上級</div>
+                        <div class="stone-cost">💎1</div>
+                    </button>
+                    <button id="bond特級Btn" class="btn-bond">
+                        <div class="bond-grade-name">特級</div>
+                        <div class="bond-grade-info">7問 / 合格: 全問正解 / 上級のみ</div>
+                        <div class="stone-cost">💎3</div>
+                    </button>
+                </div>
+
+                <button id="backFromBondQuiz" class="btn-back">← ゲームメニューに戻る</button>
+            </div>
+
+            <!-- クイズ画面（quizScreen） -->
             <div id="quizScreen" class="hidden">
                 <div class="quiz-header">
                     <div class="question-counter" id="questionCounter">問題 1/10</div>
-                    <div class="timer" id="timer">15</div>
+                    <div class="timer hidden" id="timer">15</div>
                     <div class="score-display" id="scoreDisplay">正解: 0</div>
                 </div>
 
@@ -118,29 +177,28 @@
                 </div>
 
                 <div class="options" id="optionsContainer"></div>
+
+                <div class="quiz-actions">
+                    <button id="explanationBtn" class="btn-explanation hidden">📖 解説を見る</button>
+                    <button id="nextQuestionBtn" class="btn-next hidden">次の問題へ →</button>
+                </div>
             </div>
 
-            <!-- 結果画面 -->
+            <!-- フリープレイ結果画面（resultScreen） -->
             <div id="resultScreen" class="center-screen hidden">
                 <div class="result-emoji" id="resultEmoji">🎉</div>
                 <h2 class="title">結果発表</h2>
                 <div class="result-score" id="resultScore">0 / 10</div>
                 <div class="result-message" id="resultMessage"></div>
 
+                <div class="result-points-display" id="resultPoints"></div>
+
                 <!-- 称号達成 -->
                 <div id="titleAchievement" class="hidden"></div>
 
-                <div class="stats-box">
-                    <div class="stat-item">
-                        <div class="stat-label">今週の総正答率</div>
-                        <div class="stat-value" id="resultWeeklyRate">0.0%</div>
-                        <div class="stat-detail" id="resultWeeklyDetail">(0 / 0)</div>
-                    </div>
-                </div>
-
                 <div class="ranking">
                     <h3 class="ranking-title">🏆 全国ランキング TOP 10</h3>
-                    <p class="ranking-note">※毎週月曜日0時にリセット</p>
+                    <p class="ranking-note">※毎月月末にリセット</p>
                     <ul class="ranking-list" id="rankingList"></ul>
                     <p id="noRanking" class="no-ranking hidden">まだランキングがありません</p>
                 </div>
@@ -149,16 +207,182 @@
                     <span>トップ画面に戻る</span>
                 </button>
             </div>
+
+            <!-- 絆クイズ結果画面（bondResultScreen） -->
+            <div id="bondResultScreen" class="center-screen hidden">
+                <h2 class="title">絆クイズ結果</h2>
+                <div class="bond-result-grade" id="bondResultGrade"></div>
+                <div id="bondResultStatus" class="bond-result-pass"></div>
+                <div class="bond-result-score" id="bondResultScore"></div>
+                <div class="bond-result-passline" id="bondResultPassLine"></div>
+
+                <button id="bondShareBtn" class="btn-share hidden">
+                    <span>𝕏 結果をシェア</span>
+                </button>
+
+                <button id="bondBackToMenuBtn" class="btn">
+                    <span>トップ画面に戻る</span>
+                </button>
+            </div>
+
+            <!-- クイズ履歴画面（historyScreen） -->
+            <div id="historyScreen" class="center-screen hidden">
+                <h2 class="title">クイズ履歴</h2>
+                <ul class="history-list" id="historyList"></ul>
+                <button id="backFromHistory" class="btn-back">← ホームに戻る</button>
+            </div>
+
+            <!-- 履歴詳細画面（historyDetailScreen） -->
+            <div id="historyDetailScreen" class="center-screen hidden">
+                <h2 class="title">履歴詳細</h2>
+                <div class="history-detail">
+                    <div class="detail-section">
+                        <div class="detail-label">問題</div>
+                        <div id="historyDetailQuestion" class="detail-value"></div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">選択肢</div>
+                        <ul id="historyDetailOptions" class="detail-options"></ul>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">結果</div>
+                        <div id="historyDetailResult" class="detail-value"></div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">獲得ポイント</div>
+                        <div id="historyDetailPoints" class="detail-value"></div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">難易度</div>
+                        <div id="historyDetailDifficulty" class="detail-value"></div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">モード</div>
+                        <div id="historyDetailMode" class="detail-value"></div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">解説</div>
+                        <div id="historyDetailExplanation" class="detail-value hidden"></div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">日時</div>
+                        <div id="historyDetailDate" class="detail-value"></div>
+                    </div>
+                </div>
+                <button id="backFromHistoryDetail" class="btn-back">← 履歴一覧に戻る</button>
+            </div>
+
+            <!-- プロフィール画面（profileScreen） -->
+            <div id="profileScreen" class="center-screen hidden">
+                <h2 class="title">プロフィール</h2>
+                <div class="profile-card">
+                    <div class="profile-username" id="profileUsername"></div>
+                    <div class="profile-stats">
+                        <div class="profile-stat">
+                            <div class="profile-stat-label">ランク</div>
+                            <div class="profile-stat-value" id="profileRank"></div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="profile-stat-label">累計ポイント</div>
+                            <div class="profile-stat-value" id="profilePoints"></div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="profile-stat-label">今シーズンP</div>
+                            <div class="profile-stat-value" id="profileSeasonPoints"></div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="profile-stat-label">正解率</div>
+                            <div class="profile-stat-value" id="profileCorrectRate"></div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="profile-stat-label">最高絆級</div>
+                            <div class="profile-stat-value" id="profileGrade"></div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="profile-stat-label">ストーン</div>
+                            <div class="profile-stat-value" id="profileStones"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="profileShareBtn" class="btn-share">
+                    <span>𝕏 プロフィールをシェア</span>
+                </button>
+
+                <button id="backFromProfile" class="btn-back">← ホームに戻る</button>
+            </div>
+
+            <!-- ツール画面（toolScreen） -->
+            <div id="toolScreen" class="center-screen hidden">
+                <h2 class="title">ツール</h2>
+                <p id="toolStoneInfo" class="stone-info">所持ストーン: 💎0</p>
+
+                <div class="tool-section">
+                    <h3>履歴件数拡張</h3>
+                    <p id="toolCurrentLimit">現在の履歴表示件数: 5件</p>
+                    <button id="expandHistoryBtn" class="btn">
+                        💎5個 → +5件 拡張する
+                    </button>
+                </div>
+
+                <button id="backFromTool" class="btn-back">← ホームに戻る</button>
+            </div>
+
+            <!-- ランキング画面（rankingScreen） -->
+            <div id="rankingScreen" class="center-screen hidden">
+                <h2 class="title">全国ランキング</h2>
+                <h3 id="rankingSeasonTitle" class="ranking-season-title"></h3>
+
+                <div class="ranking">
+                    <h3 class="ranking-title">🏆 TOP 50</h3>
+                    <p class="ranking-note">※毎月月末にリセット</p>
+                    <ul class="ranking-list" id="rankingListStandalone"></ul>
+                    <p id="noRankingStandalone" class="no-ranking hidden">まだランキングがありません</p>
+                </div>
+
+                <button id="viewRankingHistory" class="btn-secondary">
+                    <span>📜 過去シーズンを見る</span>
+                </button>
+
+                <button id="backFromRanking" class="btn-back">← ホームに戻る</button>
+            </div>
+
+            <!-- 過去シーズン一覧（rankingHistoryScreen） -->
+            <div id="rankingHistoryScreen" class="center-screen hidden">
+                <h2 class="title">過去シーズン一覧</h2>
+                <ul class="ranking-history-list" id="rankingHistoryList"></ul>
+                <button id="backFromRankingHistory" class="btn-back">← ランキングに戻る</button>
+            </div>
+
+            <!-- 過去ランキング画面（oldRankingScreen） -->
+            <div id="oldRankingScreen" class="center-screen hidden">
+                <h2 class="title" id="oldRankingTitle">過去ランキング</h2>
+                <div class="ranking">
+                    <ul class="ranking-list" id="oldRankingList"></ul>
+                    <p id="noOldRanking" class="no-ranking hidden">データがありません</p>
+                </div>
+                <button id="backFromOldRanking" class="btn-back">← 過去シーズン一覧に戻る</button>
+            </div>
+
+            <!-- 解説モーダル -->
+            <div id="explanationModal" class="modal hidden">
+                <div class="modal-content">
+                    <h3>📖 解説</h3>
+                    <p id="explanationText"></p>
+                    <button id="closeExplanationBtn" class="btn">閉じる</button>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    
+
     <!-- Firebase Config -->
     <script src="firebase-config.js"></script>
-    
+
     <!-- App Logic -->
     <script src="app.js"></script>
 </body>
