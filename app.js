@@ -788,6 +788,27 @@ function showScreen(screenId) {
         if (el) el.classList.add('hidden');
     });
     document.getElementById(screenId).classList.remove('hidden');
+
+    // ステータスバー: ホーム画面のみ表示
+    const statusBar = document.getElementById('statusBar');
+    if (statusBar) {
+        if (screenId === 'startScreen') {
+            statusBar.classList.remove('hidden');
+        } else {
+            statusBar.classList.add('hidden');
+        }
+    }
+
+    // ヘッダー: ホーム画面以外で表示
+    const header = document.querySelector('.header');
+    if (header) {
+        if (screenId === 'startScreen' || screenId === 'loadingScreen' || screenId === 'usernameScreen') {
+            header.classList.remove('visible');
+        } else {
+            header.classList.add('visible');
+        }
+    }
+
     window.scrollTo(0, 0);
 }
 
@@ -975,13 +996,21 @@ function showAnswerEffect(isCorrect) {
 function updateStartScreen() {
     document.getElementById('usernameDisplay').textContent = username;
 
-    // ランク・ポイント・ストーン表示
+    // ランク・ポイント・ストーン表示（旧要素 - 互換用）
     const rankDisplay = document.getElementById('rankDisplay');
     if (rankDisplay) rankDisplay.textContent = userStats.rank;
     const pointsDisplay = document.getElementById('pointsDisplay');
     if (pointsDisplay) pointsDisplay.textContent = userStats.points + 'P';
     const stonesDisplay = document.getElementById('stonesDisplay');
     if (stonesDisplay) stonesDisplay.textContent = '💎 ' + userStats.stones;
+
+    // ステータスバー更新
+    const statusRank = document.getElementById('statusRankDisplay');
+    if (statusRank) statusRank.textContent = userStats.rank;
+    const statusPoints = document.getElementById('statusPointsDisplay');
+    if (statusPoints) statusPoints.textContent = userStats.points;
+    const statusStones = document.getElementById('statusStonesDisplay');
+    if (statusStones) statusStones.textContent = userStats.stones;
 
     // 称号の表示
     const titleDisplay = document.getElementById('titleDisplay');

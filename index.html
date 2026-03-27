@@ -10,6 +10,22 @@
 </head>
 <body>
     <div class="container">
+        <!-- ステータスバー（ホーム画面時に表示） -->
+        <div id="statusBar" class="status-bar hidden">
+            <div class="status-item status-rank">
+                <span class="status-label">RANK</span>
+                <span class="status-value" id="statusRankDisplay">新規リスナー</span>
+            </div>
+            <div class="status-item status-points">
+                <span class="status-icon">P</span>
+                <span class="status-value" id="statusPointsDisplay">0</span>
+            </div>
+            <div class="status-item status-stones">
+                <span class="status-icon">💎</span>
+                <span class="status-value" id="statusStonesDisplay">0</span>
+            </div>
+        </div>
+
         <div class="header">
             <h1>💎 SixTONES💎クイズ</h1>
             <p>君はどこまで知ってる？</p>
@@ -45,61 +61,55 @@
 
             <!-- ホーム画面（startScreen） -->
             <div id="startScreen" class="center-screen hidden">
-                <h2 class="title">Welcome <span id="usernameDisplay"></span>!</h2>
-
-                <div id="usernameEditArea" class="hidden">
-                    <input
-                        type="text"
-                        id="usernameEditInput"
-                        class="input"
-                        maxlength="20"
-                    />
-                    <button id="saveUsernameBtn" class="small-btn">変更</button>
-                    <button id="cancelUsernameBtn" class="small-btn">キャンセル</button>
-                </div>
-                <button id="changeUsernameBtn" class="change-username-btn">ユーザー名を変更</button>
-
                 <!-- ログインボーナス通知 -->
                 <div id="loginBonusNotice" class="login-bonus-notice hidden">
                     💎 ログインボーナス +1個！
                 </div>
 
-                <!-- ランク・ポイント・ストーン -->
-                <div class="stats-box home-stats">
-                    <div class="stat-item">
-                        <div class="stat-label">ランク</div>
-                        <div class="stat-value" id="rankDisplay">新規リスナー</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">ポイント</div>
-                        <div class="stat-value" id="pointsDisplay">0P</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">ストーン</div>
-                        <div class="stat-value" id="stonesDisplay">💎 0</div>
-                    </div>
+                <!-- タイトルロゴ -->
+                <div class="home-logo">
+                    <div class="home-logo-text">SixTONES</div>
+                    <div class="home-logo-sub">クイズ</div>
                 </div>
 
-                <!-- 称号表示 -->
-                <div id="titleDisplay" class="title-display hidden"></div>
+                <p class="home-welcome">Welcome <span id="usernameDisplay"></span>!</p>
 
-                <div class="home-buttons">
-                    <button id="startQuizBtn" class="btn">
-                        <span>🎮 クイズで遊ぶ</span>
+                <!-- メインボタン -->
+                <button id="startQuizBtn" class="btn home-main-btn">
+                    <span>🎮 ゲームスタート</span>
+                </button>
+
+                <!-- ナビゲーショングリッド -->
+                <div class="home-nav-grid">
+                    <button id="viewProfileBtn" class="home-nav-btn">
+                        <span class="home-nav-icon">👤</span>
+                        <span class="home-nav-label">プロフィール</span>
                     </button>
-                    <button id="viewHistoryBtn" class="btn-secondary">
-                        <span>📋 クイズ履歴</span>
+                    <button id="viewHistoryBtn" class="home-nav-btn">
+                        <span class="home-nav-icon">📋</span>
+                        <span class="home-nav-label">履歴</span>
                     </button>
-                    <button id="viewProfileBtn" class="btn-secondary">
-                        <span>👤 プロフィール</span>
+                    <button id="viewRankingBtn" class="home-nav-btn">
+                        <span class="home-nav-icon">🏆</span>
+                        <span class="home-nav-label">ランキング</span>
                     </button>
-                    <button id="viewToolBtn" class="btn-secondary">
-                        <span>🔧 ツール</span>
-                    </button>
-                    <button id="viewRankingBtn" class="btn-secondary">
-                        <span>🏆 ランキング</span>
+                    <button id="viewToolBtn" class="home-nav-btn">
+                        <span class="home-nav-icon">🔧</span>
+                        <span class="home-nav-label">ツール</span>
                     </button>
                 </div>
+
+                <!-- 非表示の旧要素（JS互換用） -->
+                <div id="usernameEditArea" class="hidden">
+                    <input type="text" id="usernameEditInput" class="input" maxlength="20" />
+                    <button id="saveUsernameBtn" class="small-btn">変更</button>
+                    <button id="cancelUsernameBtn" class="small-btn">キャンセル</button>
+                </div>
+                <button id="changeUsernameBtn" class="hidden">ユーザー名を変更</button>
+                <div id="titleDisplay" class="hidden"></div>
+                <span id="rankDisplay" class="hidden"></span>
+                <span id="pointsDisplay" class="hidden"></span>
+                <span id="stonesDisplay" class="hidden"></span>
             </div>
 
             <!-- ゲームメニュー画面（gameMenuScreen） -->
