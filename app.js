@@ -32,13 +32,6 @@ const quizData = [
         explanation: ""
     },
     {
-        question: "SixTONESの公式YouTubeチャンネル名は？",
-        options: ["SixTONES Official", "ストチャン", "SixTONES Channel", "SixTONES TV"],
-        correct: 1,
-        difficulty: "初級",
-        explanation: ""
-    },
-    {
         question: "SixTONESのメンバーで最年長は？",
         options: ["髙地優吾", "京本大我", "田中樹", "松村北斗"],
         correct: 0,
@@ -76,13 +69,6 @@ const quizData = [
         explanation: ""
     },
     {
-        question: "松村北斗が主演したドラマ「恋なんて、本気でやってどうするの？」で演じた役名は？",
-        options: ["柴田雄大", "柴田大輝", "柴田拓也", "柴田優斗"],
-        correct: 0,
-        difficulty: "中級",
-        explanation: ""
-    },
-    {
         question: "ジェシーの出身地は？",
         options: ["東京都", "神奈川県", "千葉県", "埼玉県"],
         correct: 0,
@@ -112,32 +98,11 @@ const quizData = [
         explanation: ""
     },
     {
-        question: "京本大我の舞台デビュー作品は？",
-        options: ["エリザベート", "滝沢歌舞伎", "DREAM BOYS", "少年たち"],
-        correct: 2,
-        difficulty: "上級",
-        explanation: ""
-    },
-    {
-        question: "田中樹がラップを始めたきっかけとなったアーティストは？",
-        options: ["KREVA", "RIP SLYME", "Dragon Ash", "KICK THE CAN CREW"],
-        correct: 0,
-        difficulty: "上級",
-        explanation: ""
-    },
-    {
         question: "松村北斗が出演した映画「ライアー×ライアー」の公開年は？",
         options: ["2019年", "2020年", "2021年", "2022年"],
         correct: 2,
         difficulty: "上級",
         randomizeOptions: false,
-        explanation: ""
-    },
-    {
-        question: "ジェシーがバラエティ番組でよく披露する特技は？",
-        options: ["アクロバット", "マジック", "モノマネ", "すべて"],
-        correct: 3,
-        difficulty: "上級",
         explanation: ""
     },
     // ========== 新規追加問題 80問 ==========
@@ -159,14 +124,14 @@ const quizData = [
     {
         question: "田中樹のメンバーカラーは？",
         options: ["黒", "赤", "青", "緑"],
-        correct: 0,
+        correct: 2,
         difficulty: "初級",
         explanation: ""
     },
     {
         question: "松村北斗のメンバーカラーは？",
         options: ["赤", "青", "黒", "紫"],
-        correct: 1,
+        correct: 2,
         difficulty: "初級",
         explanation: ""
     },
@@ -197,13 +162,6 @@ const quizData = [
         correct: 0,
         difficulty: "初級",
         randomizeOptions: false,
-        explanation: ""
-    },
-    {
-        question: "SixTONESの公式ファンクラブ名は？",
-        options: ["SixTONES FC", "ストーンズクラブ", "Island", "特に名称なし"],
-        correct: 2,
-        difficulty: "初級",
         explanation: ""
     },
     {
@@ -266,13 +224,6 @@ const quizData = [
         explanation: ""
     },
 
-    {
-        question: "SixTONESの楽曲「僕が僕じゃないみたいだ」のジャンルは？",
-        options: ["ロック", "バラード", "ダンス", "ラップ"],
-        correct: 1,
-        difficulty: "初級",
-        explanation: ""
-    },
 
     // 中級 40問
     {
@@ -416,20 +367,6 @@ const quizData = [
     },
 
 
-    {
-        question: "髙地優吾の特技は？",
-        options: ["歌", "ダンス", "ボイスパーカッション", "料理"],
-        correct: 2,
-        difficulty: "中級",
-        explanation: ""
-    },
-    {
-        question: "京本大我の特技は？",
-        options: ["歌", "ギター", "ピアノ", "ドラム"],
-        correct: 0,
-        difficulty: "中級",
-        explanation: ""
-    },
 
     {
         question: "ジェシーの父親の国籍は？",
@@ -446,16 +383,9 @@ const quizData = [
         explanation: ""
     },
     {
-        question: "SixTONESの楽曲で最もYouTube再生回数が多いのは？（2024年時点）",
-        options: ["Imitation Rain", "NAVIGATOR", "こっから", "NEW ERA"],
-        correct: 2,
-        difficulty: "中級",
-        explanation: ""
-    },
-    {
         question: "SixTONESが初めてアリーナツアーを行ったのは？",
         options: ["2020年", "2021年", "2022年", "2023年"],
-        correct: 0,
+        correct: 1,
         difficulty: "中級",
         randomizeOptions: false,
         explanation: ""
@@ -477,23 +407,9 @@ const quizData = [
         explanation: ""
     },
     {
-        question: "髙地優吾がよく担当するパートは？",
-        options: ["高音", "低音", "ラップ", "すべて"],
-        correct: 0,
-        difficulty: "中級",
-        explanation: ""
-    },
-    {
         question: "SixTONESのメンバーで身長が最も高いのは？",
         options: ["ジェシー", "松村北斗", "髙地優吾", "森本慎太郎"],
         correct: 0,
-        difficulty: "中級",
-        explanation: ""
-    },
-    {
-        question: "SixTONESの楽曲制作に関わることが多いメンバーは？",
-        options: ["京本大我", "田中樹", "松村北斗", "全員"],
-        correct: 1,
         difficulty: "中級",
         explanation: ""
     },
@@ -508,13 +424,6 @@ const quizData = [
         question: "森本慎太郎がドラマ「パーフェクトワールド」で演じた役柄は？",
         options: ["主人公の友人", "主人公の弟", "主人公のライバル", "医師"],
         correct: 1,
-        difficulty: "中級",
-        explanation: ""
-    },
-    {
-        question: "SixTONESのメンバーが全員出演したバラエティ番組は？",
-        options: ["VS魂", "世界の果てまでイッテQ!", "ザ!鉄腕!DASH!!", "すべて"],
-        correct: 0,
         difficulty: "中級",
         explanation: ""
     },
@@ -548,20 +457,6 @@ const quizData = [
         explanation: ""
     },
     {
-        question: "田中樹が作詞・作曲に関わった初めての楽曲は？",
-        options: ["Good Luck!", "Rosy", "Laugh In the LIFE", "特になし"],
-        correct: 2,
-        difficulty: "上級",
-        explanation: ""
-    },
-    {
-        question: "松村北斗が雑誌「anan」で連載していた企画は？",
-        options: ["映画レビュー", "小説連載", "インタビュー企画", "写真撮影"],
-        correct: 1,
-        difficulty: "上級",
-        explanation: ""
-    },
-    {
         question: "ジェシーの以前の芸名は？",
         options: ["ジェシー・ルイス", "ルイス・ジェシー", "ジェシー・マサヒロ", "マサヒロ・ジェシー"],
         correct: 1,
@@ -583,34 +478,13 @@ const quizData = [
         explanation: ""
     },
 
-    {
-        question: "松村北斗がモデルを務めた雑誌は？",
-        options: ["anan", "non-no", "ViVi", "すべて"],
-        correct: 3,
-        difficulty: "上級",
-        explanation: ""
-    },
 
-    {
-        question: "田中樹がベースを弾き始めたきっかけは？",
-        options: ["父親の影響", "兄弟の影響", "友人の影響", "自分から"],
-        correct: 3,
-        difficulty: "上級",
-        explanation: ""
-    },
     {
         question: "ジェシーの身長は？",
         options: ["180cm", "184cm", "186cm", "188cm"],
         correct: 1,
         difficulty: "上級",
         randomizeOptions: false,
-        explanation: ""
-    },
-    {
-        question: "京本大我が影響を受けた歌手は？",
-        options: ["マイケル・ジャクソン", "フレディ・マーキュリー", "スティービー・ワンダー", "すべて"],
-        correct: 1,
-        difficulty: "上級",
         explanation: ""
     },
 
@@ -625,21 +499,6 @@ const quizData = [
         question: "京本大我の血液型は？",
         options: ["A型", "B型", "O型", "AB型"],
         correct: 1,
-        difficulty: "上級",
-        explanation: ""
-    },
-    {
-        question: "松村北斗が出演した舞台「滝沢歌舞伎」で演じた役の特徴は？",
-        options: ["殺陣", "歌唱", "ダンス", "すべて"],
-        correct: 3,
-        difficulty: "上級",
-        explanation: ""
-    },
-
-    {
-        question: "田中樹が尊敬するラッパーで、実際に共演したことがあるのは？",
-        options: ["KREVA", "ZEEBRA", "AK-69", "すべて"],
-        correct: 0,
         difficulty: "上級",
         explanation: ""
     }
