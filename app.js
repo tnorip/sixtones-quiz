@@ -504,15 +504,6 @@ const quizData = [
     }
 ];
 
-// 称号システム
-const titles = [
-    { rate: 99, title: "最髙地優吾", comment: "", emoji: "🏅" },
-    { rate: 85, title: "おやーンズ", comment: "", emoji: "❤️‍🔥" },
-    { rate: 70, title: "サタスペリスナー", comment: "", emoji: "🎧" },
-    { rate: 50, title: "チムスト", comment: "", emoji: "💎" },
-    { rate: 0, title: "見習いンズ", comment: "", emoji: "🌱" }
-];
-
 // ランク制（累計ポイントで昇格・降格なし）
 const rankThresholds = [
     { minPoints: 1500, rankName: '最髙地優吾' },
@@ -597,8 +588,6 @@ let userStats = {
     seasonPoints: 0,
     grade: '-'
 };
-let currentTitle = null;
-let newTitleAchieved = false;
 
 // 初期化
 async function init() {
@@ -668,6 +657,12 @@ function showScreen(screenId) {
         }
     }
 
+    // コンテナレイアウト: ホーム画面は中央寄せ
+    const container = document.querySelector('.container');
+    if (container) {
+        container.classList.toggle('home-layout', screenId === 'startScreen' || screenId === 'usernameScreen');
+    }
+
     window.scrollTo(0, 0);
 }
 
@@ -700,15 +695,12 @@ async function loadUserStats() {
                 seasonPoints: data.seasonPoints || 0,
                 grade: data.grade || '-'
             };
-            currentTitle = data.title || null;
         } else {
             userStats = getDefaultUserStats();
-            currentTitle = null;
         }
     } catch (error) {
         console.error('統計読み込みエラー:', error);
         userStats = getDefaultUserStats();
-        currentTitle = null;
     }
 }
 
@@ -790,16 +782,6 @@ async function checkLoginBonus() {
     return false;
 }
 
-// 称号の取得
-function getTitleForRate(rate) {
-    for (let i = 0; i < titles.length; i++) {
-        if (rate >= titles[i].rate) {
-            return titles[i];
-        }
-    }
-    return titles[titles.length - 1];
-}
-
 // 効果音生成
 function playSound(type) {
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -871,26 +853,6 @@ function updateStartScreen() {
     const statusStones = document.getElementById('statusStonesDisplay');
     if (statusStones) statusStones.textContent = userStats.stones;
 
-    // 称号の表示
-    const titleDisplay = document.getElementById('titleDisplay');
-    const displayTitle = currentTitle || getTitleForRate(0);
-
-    if (displayTitle) {
-        let titleHTML = `
-            <div class="title-label">＜称号＞</div>
-            <div class="title-badge">
-                <span class="title-emoji">${displayTitle.emoji}</span>
-                <span class="title-name">${displayTitle.title}</span>
-            </div>
-        `;
-        if (displayTitle.comment) {
-            titleHTML += `<div class="title-comment">${displayTitle.comment}</div>`;
-        }
-        titleDisplay.innerHTML = titleHTML;
-        titleDisplay.classList.remove('hidden');
-    } else {
-        titleDisplay.classList.add('hidden');
-    }
 }
 
 // ユーザー名設定
@@ -1221,21 +1183,8 @@ async function finishQuiz() {
     userStats.totalCount += currentQuestions.length;
     userStats.rank = getRankForPoints(userStats.points);
 
-    // 称号判定
-    const overallRate = userStats.totalCount > 0
-        ? (userStats.correctCount / userStats.totalCount) * 100 : 0;
-    const newTitle = getTitleForRate(overallRate);
-    const oldTitleRate = currentTitle ? currentTitle.rate : -1;
-    newTitleAchieved = newTitle.rate > oldTitleRate;
-
-    if (newTitleAchieved || !currentTitle) {
-        currentTitle = newTitle;
-        userStats.title = currentTitle;
-    }
-
     // 結果画面表示
     showResultScreenWithCurrentData(earnedPoints);
-    updateResultScreenWithTitle();
 
     try {
         await saveUserStats();
@@ -1283,28 +1232,6 @@ function showResultScreenWithCurrentData(earnedPoints) {
     const resultPoints = document.getElementById('resultPoints');
     if (resultPoints) resultPoints.textContent = `+${earnedPoints || 0}P (合計: ${userStats.points}P)`;
 
-    document.getElementById('titleAchievement').classList.add('hidden');
-}
-
-// 称号達成表示を更新
-function updateResultScreenWithTitle() {
-    const titleAchievement = document.getElementById('titleAchievement');
-    if (newTitleAchieved && currentTitle) {
-        let achievementHTML = `
-            <div class="achievement-banner">
-                <div class="achievement-text">🎊 新しい称号を獲得！ 🎊</div>
-                <div class="title-badge-large">
-                    <span class="title-emoji-large">${currentTitle.emoji}</span>
-                    <span class="title-name-large">${currentTitle.title}</span>
-                </div>
-        `;
-        if (currentTitle.comment) {
-            achievementHTML += `<div class="title-comment-large">${currentTitle.comment}</div>`;
-        }
-        achievementHTML += `</div>`;
-        titleAchievement.innerHTML = achievementHTML;
-        titleAchievement.classList.remove('hidden');
-    }
 }
 
 // ===== 絆クイズ =====
@@ -1500,6 +1427,41 @@ function updateProfileScreen() {
 
 document.getElementById('backFromProfile')?.addEventListener('click', () => {
     showScreen('startScreen');
+    updateStartScreen();
+});
+
+// プロフィール画面でのユーザー名変更
+document.getElementById('profileChangeUsernameBtn')?.addEventListener('click', () => {
+    const editArea = document.getElementById('profileUsernameEditArea');
+    editArea.classList.toggle('hidden');
+    if (!editArea.classList.contains('hidden')) {
+        document.getElementById('profileUsernameEditInput').value = username;
+        document.getElementById('profileUsernameEditInput').focus();
+    }
+});
+
+document.getElementById('profileCancelUsernameBtn')?.addEventListener('click', () => {
+    document.getElementById('profileUsernameEditArea').classList.add('hidden');
+});
+
+document.getElementById('profileSaveUsernameBtn')?.addEventListener('click', async () => {
+    const newName = document.getElementById('profileUsernameEditInput').value.trim();
+    if (!newName) {
+        alert('ユーザー名を入力してください');
+        return;
+    }
+    if (newName === username) {
+        document.getElementById('profileUsernameEditArea').classList.add('hidden');
+        return;
+    }
+
+    username = newName;
+    localStorage.setItem('sixtonesQuizUsername', username);
+    await loadUserStats();
+    await saveUserStats();
+    updateProfileScreen();
+    updateStartScreen();
+    document.getElementById('profileUsernameEditArea').classList.add('hidden');
 });
 
 // ===== ツール画面 =====
