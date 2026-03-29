@@ -106,7 +106,6 @@
                     <button id="cancelUsernameBtn" class="small-btn">キャンセル</button>
                 </div>
                 <button id="changeUsernameBtn" class="hidden">ユーザー名を変更</button>
-                <div id="titleDisplay" class="hidden"></div>
                 <span id="rankDisplay" class="hidden"></span>
                 <span id="pointsDisplay" class="hidden"></span>
                 <span id="stonesDisplay" class="hidden"></span>
@@ -203,9 +202,6 @@
 
                 <div class="result-points-display" id="resultPoints"></div>
 
-                <!-- 称号達成 -->
-                <div id="titleAchievement" class="hidden"></div>
-
                 <div class="ranking">
                     <h3 class="ranking-title">🏆 全国ランキング TOP 10</h3>
                     <p class="ranking-note">※毎月月末にリセット</p>
@@ -287,6 +283,14 @@
                 <h2 class="title">プロフィール</h2>
                 <div class="profile-card">
                     <div class="profile-username" id="profileUsername"></div>
+                    <button id="profileChangeUsernameBtn" class="change-username-btn">ユーザー名を変更</button>
+                    <div id="profileUsernameEditArea" class="profile-username-edit hidden">
+                        <input type="text" id="profileUsernameEditInput" class="input" maxlength="20" placeholder="新しいユーザー名" />
+                        <div class="profile-username-edit-buttons">
+                            <button id="profileSaveUsernameBtn" class="small-btn">変更</button>
+                            <button id="profileCancelUsernameBtn" class="small-btn">キャンセル</button>
+                        </div>
+                    </div>
                     <div class="profile-stats">
                         <div class="profile-stat">
                             <div class="profile-stat-label">ランク</div>
