@@ -127,7 +127,7 @@ body::after {
 
 .header {
     text-align: center;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     animation: slideDown 0.6s ease-out;
     display: none;
 }
@@ -138,18 +138,18 @@ body::after {
 
 .header h1 {
     font-weight: 900;
-    font-size: clamp(2rem, 6vw, 3.5rem);
+    font-size: clamp(1.4rem, 4vw, 2rem);
     background: linear-gradient(135deg, #ffd700 0%, #ffffff 50%, #ffd700 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    margin-bottom: 10px;
-    letter-spacing: 3px;
+    margin-bottom: 2px;
+    letter-spacing: 2px;
     text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
 }
 
 .header p {
-    font-size: 1.2rem;
+    font-size: 0.85rem;
     color: #e0e0e0;
     font-weight: 500;
 }
@@ -170,8 +170,8 @@ body::after {
 .screen-decor-1,
 .screen-decor-2 {
     position: absolute;
-    top: -30px;
-    font-size: 3rem;
+    top: -20px;
+    font-size: 2rem;
     animation: float 3s ease-in-out infinite;
     filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
 }
@@ -494,31 +494,31 @@ body::after {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 12px;
     flex-wrap: wrap;
-    gap: 15px;
+    gap: 8px;
 }
 
 .question-counter {
     font-weight: 800;
-    font-size: 1.3rem;
+    font-size: 1rem;
     color: #daa520;
     background: #fffaf0;
-    padding: 10px 20px;
-    border-radius: 20px;
-    border: 3px solid #daa520;
+    padding: 6px 14px;
+    border-radius: 16px;
+    border: 2px solid #daa520;
 }
 
 .timer {
     font-weight: 900;
-    font-size: 2rem;
+    font-size: 1.5rem;
     color: #daa520;
     background: #fff;
-    padding: 10px 25px;
-    border-radius: 20px;
-    border: 4px solid #daa520;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    min-width: 100px;
+    padding: 6px 16px;
+    border-radius: 16px;
+    border: 3px solid #daa520;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    min-width: 70px;
     text-align: center;
     animation: pulse 1s ease-in-out infinite;
 }
@@ -552,43 +552,43 @@ body::after {
 
 .score-display {
     font-weight: 800;
-    font-size: 1.3rem;
+    font-size: 1rem;
     color: #000;
     background: #fff;
-    padding: 10px 20px;
-    border-radius: 20px;
-    border: 3px solid #daa520;
+    padding: 6px 14px;
+    border-radius: 16px;
+    border: 2px solid #daa520;
 }
 
 .question-box {
     background: linear-gradient(135deg, #fffaf0 0%, #fff8dc 100%);
-    padding: 30px;
-    border-radius: 20px;
-    margin-bottom: 30px;
-    border: 4px solid #daa520;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    padding: 16px;
+    border-radius: 16px;
+    margin-bottom: 12px;
+    border: 3px solid #daa520;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .question-text {
-    font-size: 1.4rem;
+    font-size: 1.15rem;
     font-weight: bold;
     color: #333;
-    line-height: 1.6;
+    line-height: 1.5;
 }
 
 .options {
     display: grid;
-    gap: 15px;
+    gap: 8px;
 }
 
 .option {
     background: #fff;
-    border: 4px solid #ddd;
-    padding: 20px;
-    border-radius: 15px;
+    border: 3px solid #ddd;
+    padding: 14px;
+    border-radius: 12px;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: bold;
     position: relative;
     overflow: hidden;
@@ -656,8 +656,8 @@ body::after {
 }
 
 .result-emoji {
-    font-size: 5rem;
-    margin-bottom: 20px;
+    font-size: 3rem;
+    margin-bottom: 8px;
     animation: bounce 1s ease infinite;
 }
 
@@ -672,32 +672,32 @@ body::after {
 
 .result-score {
     font-weight: 900;
-    font-size: 4rem;
+    font-size: 2.5rem;
     color: #daa520;
-    margin-bottom: 30px;
+    margin-bottom: 8px;
     text-shadow: 3px 3px 0px rgba(0,0,0,0.1);
 }
 
 .result-message {
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     color: #555;
-    margin-bottom: 30px;
-    line-height: 1.8;
+    margin-bottom: 10px;
+    line-height: 1.6;
 }
 
 .ranking {
     background: #f5f5f5;
-    border-radius: 20px;
-    padding: 25px;
-    margin: 30px 0;
-    border: 4px solid #daa520;
+    border-radius: 16px;
+    padding: 16px;
+    margin: 12px 0;
+    border: 3px solid #daa520;
 }
 
 .ranking-title {
     font-weight: 800;
-    font-size: 1.8rem;
+    font-size: 1.2rem;
     color: #daa520;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
 }
 
 .ranking-note {
@@ -714,14 +714,15 @@ body::after {
 
 .ranking-item {
     background: #fff;
-    padding: 15px 20px;
-    margin-bottom: 10px;
-    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    border-radius: 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     border: 2px solid #ddd;
     font-weight: bold;
+    font-size: 0.9rem;
 }
 
 .ranking-item.first {
@@ -952,38 +953,38 @@ body::after {
 .menu-section {
     background: #fffaf0;
     border: 3px solid #daa520;
-    border-radius: 20px;
-    padding: 25px;
-    margin: 20px 0;
+    border-radius: 16px;
+    padding: 16px;
+    margin: 10px 0;
 }
 
 .menu-section-title {
     font-weight: 900;
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     color: #daa520;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
 }
 
 .menu-description {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     color: #888;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .difficulty-buttons {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 8px;
 }
 
 .btn-difficulty {
     font-family: 'Noto Sans JP', sans-serif;
     font-weight: 700;
-    padding: 15px;
-    border-radius: 15px;
+    padding: 12px;
+    border-radius: 12px;
     border: 3px solid;
     cursor: pointer;
-    font-size: 1.1rem;
+    font-size: 1rem;
     transition: all 0.3s ease;
 }
 
@@ -1045,20 +1046,20 @@ body::after {
 .bond-grade-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
 }
 
 .btn-bond {
     font-family: 'Noto Sans JP', sans-serif;
     background: #fff;
-    border: 3px solid #daa520;
-    border-radius: 15px;
-    padding: 18px 20px;
+    border: 2px solid #daa520;
+    border-radius: 12px;
+    padding: 12px 14px;
     cursor: pointer;
     text-align: left;
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 10px;
     transition: all 0.3s ease;
 }
 
@@ -1079,20 +1080,20 @@ body::after {
 
 .bond-grade-name {
     font-weight: 900;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     color: #daa520;
-    min-width: 50px;
+    min-width: 40px;
 }
 
 .bond-grade-info {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: #666;
     flex: 1;
 }
 
 .stone-cost {
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 0.9rem;
     color: #42a5f5;
 }
 
@@ -1355,38 +1356,41 @@ body::after {
 /* ===== プロフィール ===== */
 .profile-card {
     background: linear-gradient(135deg, #fffaf0 0%, #fff8dc 100%);
-    border: 4px solid #daa520;
-    border-radius: 20px;
-    padding: 30px;
-    margin: 20px 0;
+    border: 3px solid #daa520;
+    border-radius: 16px;
+    padding: 16px;
+    margin: 10px 0;
 }
 
 .profile-username {
     font-weight: 900;
-    font-size: 2rem;
+    font-size: 1.5rem;
     color: #daa520;
-    margin-bottom: 20px;
+    margin-bottom: 4px;
 }
 
 .profile-stats {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
 }
 
 .profile-stat {
     text-align: center;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 10px;
+    padding: 8px 4px;
 }
 
 .profile-stat-label {
-    font-size: 0.85rem;
+    font-size: 0.7rem;
     color: #888;
-    margin-bottom: 5px;
+    margin-bottom: 2px;
 }
 
 .profile-stat-value {
     font-weight: 700;
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     color: #333;
 }
 
@@ -1527,11 +1531,11 @@ body::after {
     }
 
     .difficulty-buttons {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
     }
 
     .profile-stats {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr 1fr;
     }
 
     /* ホーム画面コンパクト調整 */
