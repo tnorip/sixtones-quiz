@@ -628,7 +628,7 @@ function showScreen(screenId) {
         'gameMenuScreen', 'quizScreen', 'resultScreen',
         'bondQuizScreen', 'bondResultScreen',
         'historyScreen', 'historyDetailScreen',
-        'profileScreen', 'toolScreen',
+        'profileScreen', 'helpScreen', 'toolScreen',
         'rankingScreen', 'rankingHistoryScreen', 'oldRankingScreen'
     ];
     screens.forEach(id => {
@@ -1426,6 +1426,16 @@ function updateProfileScreen() {
 }
 
 document.getElementById('backFromProfile')?.addEventListener('click', () => {
+    showScreen('startScreen');
+    updateStartScreen();
+});
+
+// ===== 遊び方画面 =====
+document.getElementById('viewHelpBtn')?.addEventListener('click', () => {
+    showScreen('helpScreen');
+});
+
+document.getElementById('backFromHelp')?.addEventListener('click', () => {
     showScreen('startScreen');
     updateStartScreen();
 });
