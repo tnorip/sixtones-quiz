@@ -32,8 +32,12 @@
         </div>
 
         <div class="screen">
-            <div class="screen-decor-1">🎤</div>
-            <div class="screen-decor-2">✨</div>
+            <div class="screen-decor-1">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="6" r="5" stroke="#daa520" stroke-width="2"/><rect x="10" y="11" width="4" height="10" rx="2" fill="#daa520"/><rect x="6" y="18" width="12" height="3" rx="1.5" fill="#daa520"/></svg>
+            </div>
+            <div class="screen-decor-2">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><polygon points="12,2 15,9 22,9 16,14 18,21 12,17 6,21 8,14 2,9 9,9" fill="#ffd700" opacity="0.8"/></svg>
+            </div>
 
             <!-- ローディング画面 -->
             <div id="loadingScreen" class="center-screen">
@@ -76,26 +80,53 @@
 
                 <!-- メインボタン -->
                 <button id="startQuizBtn" class="btn home-main-btn">
-                    <span>🎮 ゲームスタート</span>
+                    <span>
+                        <svg class="btn-icon" width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="20" height="14" rx="3" stroke="currentColor" stroke-width="2"/><circle cx="8" cy="15" r="2" fill="currentColor"/><circle cx="16" cy="15" r="2" fill="currentColor"/><rect x="6" y="10" width="4" height="2" rx="1" fill="currentColor"/><rect x="14" y="10" width="4" height="2" rx="1" fill="currentColor"/></svg>
+                        ゲームスタート
+                    </span>
                 </button>
 
-                <!-- ナビゲーショングリッド -->
+                <!-- ナビゲーショングリッド 上段 -->
                 <div class="home-nav-grid">
                     <button id="viewProfileBtn" class="home-nav-btn">
-                        <span class="home-nav-icon">👤</span>
+                        <span class="home-nav-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        </span>
                         <span class="home-nav-label">プロフィール</span>
                     </button>
                     <button id="viewHistoryBtn" class="home-nav-btn">
-                        <span class="home-nav-icon">📋</span>
+                        <span class="home-nav-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><polyline points="12,7 12,12 16,14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        </span>
                         <span class="home-nav-label">履歴</span>
                     </button>
                     <button id="viewRankingBtn" class="home-nav-btn">
-                        <span class="home-nav-icon">🏆</span>
+                        <span class="home-nav-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="14" width="5" height="8" rx="1" fill="currentColor" opacity="0.5"/><rect x="10" y="8" width="5" height="14" rx="1" fill="currentColor" opacity="0.7"/><rect x="17" y="11" width="5" height="11" rx="1" fill="currentColor" opacity="0.6"/><circle cx="12.5" cy="4" r="2.5" stroke="currentColor" stroke-width="1.5"/></svg>
+                        </span>
                         <span class="home-nav-label">ランキング</span>
                     </button>
                     <button id="viewToolBtn" class="home-nav-btn">
-                        <span class="home-nav-icon">🔧</span>
+                        <span class="home-nav-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3-3a6 6 0 01-7.5 7.5L6 21a2 2 0 01-3-3l7.2-7.2a6 6 0 017.5-7.5l-3 3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
                         <span class="home-nav-label">ツール</span>
+                    </button>
+                </div>
+
+                <!-- ナビゲーション 下段 -->
+                <div class="home-nav-grid home-nav-grid-2col">
+                    <button id="viewStoneBtn" class="home-nav-btn home-nav-btn-disabled">
+                        <span class="home-nav-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><polygon points="12,2 15.5,8.5 22,9.5 17,14.5 18.5,21 12,17.5 5.5,21 7,14.5 2,9.5 8.5,8.5" stroke="currentColor" stroke-width="2" fill="none"/><line x1="12" y1="8" x2="12" y2="14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="9" y1="11" x2="15" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        </span>
+                        <span class="home-nav-label">💎 獲得<br><span class="home-nav-sub">今後追加予定</span></span>
+                    </button>
+                    <button id="viewHelpBtn" class="home-nav-btn">
+                        <span class="home-nav-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M9.5 9a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1" fill="currentColor"/></svg>
+                        </span>
+                        <span class="home-nav-label">遊び方</span>
                     </button>
                 </div>
 
@@ -324,6 +355,57 @@
                 </button>
 
                 <button id="backFromProfile" class="btn-back">← ホームに戻る</button>
+            </div>
+
+            <!-- 遊び方画面（helpScreen） -->
+            <div id="helpScreen" class="center-screen hidden">
+                <h2 class="title">遊び方</h2>
+
+                <div class="help-section">
+                    <h3 class="help-section-title">SixTONESクイズとは？</h3>
+                    <p class="help-text">SixTONESに関するクイズに挑戦して、全国のファンとランキングで競おう！</p>
+                </div>
+
+                <div class="help-section">
+                    <h3 class="help-section-title">フリープレイ</h3>
+                    <p class="help-text">
+                        難易度を選んで10問に挑戦。タイマーなしでじっくり回答できます。<br>
+                        正解するとポイントGET！（初級+1P / 中級+2P / 上級+3P）
+                    </p>
+                </div>
+
+                <div class="help-section">
+                    <h3 class="help-section-title">絆クイズ</h3>
+                    <p class="help-text">
+                        ストーン（💎）を消費して級認定に挑戦！15秒以内に回答しよう。<br>
+                        4級〜特級まであり、合格するとプロフィールに表示されます。
+                    </p>
+                </div>
+
+                <div class="help-section">
+                    <h3 class="help-section-title">ランク制</h3>
+                    <p class="help-text">
+                        累計ポイントでランクが上がります。<br>
+                        新規リスナー → 見習いンズ(50P) → チムスト(150P) → サタスペリスナー(350P) → おやーンズ(700P) → 最髙地優吾(1500P)
+                    </p>
+                </div>
+
+                <div class="help-section">
+                    <h3 class="help-section-title">ストーン（💎）</h3>
+                    <p class="help-text">
+                        毎日ログインで💎1個もらえます。<br>
+                        絆クイズの挑戦や、履歴件数の拡張に使えます。
+                    </p>
+                </div>
+
+                <div class="help-section">
+                    <h3 class="help-section-title">ランキング</h3>
+                    <p class="help-text">
+                        毎月リセットのシーズン制。今月のポイントで全国ランキングを競おう！
+                    </p>
+                </div>
+
+                <button id="backFromHelp" class="btn-back">← ホームに戻る</button>
             </div>
 
             <!-- ツール画面（toolScreen） -->

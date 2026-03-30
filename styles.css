@@ -170,10 +170,10 @@ body::after {
 .screen-decor-1,
 .screen-decor-2 {
     position: absolute;
-    top: -20px;
-    font-size: 2rem;
+    top: -14px;
     animation: float 3s ease-in-out infinite;
-    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
+    filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.5));
+    line-height: 0;
 }
 
 .screen-decor-1 {
@@ -814,37 +814,49 @@ body::after {
 /* ===== ホーム画面ロゴ ===== */
 .home-logo {
     margin: 12px 0;
-    padding: 24px 20px 16px;
-    background: linear-gradient(180deg, #e3f0ff 0%, #c8dff5 100%);
-    border-radius: 24px;
+    padding: 20px 20px 14px;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+    border-radius: 20px;
+    border: 2px solid #daa520;
     position: relative;
+    overflow: hidden;
+}
+
+.home-logo::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        radial-gradient(circle at 30% 40%, rgba(218, 165, 32, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 70% 60%, rgba(255, 215, 0, 0.1) 0%, transparent 50%);
+    pointer-events: none;
 }
 
 .home-logo-text {
     font-weight: 900;
-    font-size: clamp(3rem, 11vw, 5rem);
-    color: #4a9eda;
+    font-size: clamp(2.8rem, 10vw, 4.5rem);
+    background: linear-gradient(135deg, #ffd700 0%, #fff 40%, #ffd700 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     letter-spacing: 2px;
     line-height: 1;
-    text-shadow:
-        -2px -2px 0 #fff,
-        2px -2px 0 #fff,
-        -2px 2px 0 #fff,
-        2px 2px 0 #fff,
-        0 3px 6px rgba(0,0,0,0.15);
+    position: relative;
 }
 
 .home-logo-sub {
     font-weight: 900;
-    font-size: clamp(2.8rem, 10vw, 4.5rem);
-    color: #333;
+    font-size: clamp(2.5rem, 9vw, 4rem);
+    background: linear-gradient(135deg, #daa520 0%, #ffd700 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     letter-spacing: 8px;
     line-height: 1.2;
-    text-shadow:
-        -2px -2px 0 #fff,
-        2px -2px 0 #fff,
-        -2px 2px 0 #fff,
-        2px 2px 0 #fff;
+    position: relative;
 }
 
 .home-welcome {
@@ -905,6 +917,51 @@ body::after {
     font-size: 0.75rem;
     font-weight: 700;
     color: #555;
+    line-height: 1.3;
+}
+
+.home-nav-sub {
+    font-size: 0.55rem;
+    color: #aaa;
+    font-weight: 500;
+}
+
+/* 2列グリッド（下段） */
+.home-nav-grid-2col {
+    grid-template-columns: repeat(2, 1fr);
+    margin-top: 8px;
+}
+
+/* 無効化ナビボタン */
+.home-nav-btn-disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    background: #e8e8e8;
+}
+
+.home-nav-btn-disabled:hover {
+    transform: none;
+    border-color: #ddd;
+    background: #e8e8e8;
+}
+
+/* SVGアイコン共通 */
+.home-nav-icon svg {
+    display: block;
+    color: #666;
+}
+
+.home-nav-btn:hover .home-nav-icon svg {
+    color: #daa520;
+}
+
+.home-nav-btn-disabled .home-nav-icon svg {
+    color: #aaa;
+}
+
+.btn-icon {
+    vertical-align: middle;
+    margin-right: 4px;
 }
 
 /* ===== ホーム画面旧スタイル互換 ===== */
@@ -1392,6 +1449,29 @@ body::after {
     font-weight: 700;
     font-size: 1.1rem;
     color: #333;
+}
+
+/* ===== 遊び方画面 ===== */
+.help-section {
+    background: #fffaf0;
+    border: 2px solid #daa520;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin: 8px 0;
+    text-align: left;
+}
+
+.help-section-title {
+    font-weight: 900;
+    font-size: 1rem;
+    color: #daa520;
+    margin-bottom: 4px;
+}
+
+.help-text {
+    font-size: 0.85rem;
+    color: #555;
+    line-height: 1.6;
 }
 
 /* ===== ツール画面 ===== */
