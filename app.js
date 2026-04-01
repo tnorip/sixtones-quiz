@@ -659,7 +659,7 @@ function showScreen(screenId) {
         'gameMenuScreen', 'quizScreen', 'resultScreen',
         'bondQuizScreen', 'bondResultScreen',
         'historyScreen', 'historyDetailScreen',
-        'profileScreen', 'helpScreen', 'toolScreen',
+        'profileScreen', 'helpScreen', 'toolScreen', 'stoneGetScreen',
         'rankingScreen', 'rankingHistoryScreen', 'oldRankingScreen'
     ];
     screens.forEach(id => {
@@ -934,6 +934,11 @@ document.getElementById('viewToolBtn').addEventListener('click', () => {
     updateToolScreen();
 });
 
+document.getElementById('viewStoneBtn').addEventListener('click', () => {
+    showScreen('stoneGetScreen');
+    updateStoneGetScreen();
+});
+
 // ===== ゲームメニュー画面 =====
 document.getElementById('backFromGameMenu').addEventListener('click', () => {
     showScreen('startScreen');
@@ -999,12 +1004,14 @@ function showQuestion() {
     document.getElementById('scoreDisplay').textContent = `正解: ${score}`;
     document.getElementById('questionText').textContent = question.question;
 
-    // 解説ボタンを非表示にリセット
+    // 解説ボタン・報告ボタンを非表示にリセット
     const explanationBtn = document.getElementById('explanationBtn');
     if (explanationBtn) {
         explanationBtn.classList.add('hidden');
         explanationBtn.onclick = null;
     }
+    const reportBtn = document.getElementById('reportBtn');
+    if (reportBtn) reportBtn.classList.add('hidden');
 
     const optionsContainer = document.getElementById('optionsContainer');
     optionsContainer.innerHTML = '';
@@ -1123,6 +1130,13 @@ function selectAnswer(originalIndex, displayIndex, correctDisplayIndex) {
         explanationBtn.onclick = () => showExplanationModal(question.explanation);
     }
 
+    // 回答後に間違い報告ボタンを表示
+    const reportBtn = document.getElementById('reportBtn');
+    if (reportBtn) {
+        reportBtn.classList.remove('hidden');
+        reportBtn.onclick = () => showReportModal(question);
+    }
+
     // フリープレイは手動で次へ（解説を読む時間を確保）
     if (currentMode === 'free') {
         const nextBtn = document.getElementById('nextQuestionBtn');
@@ -1131,6 +1145,7 @@ function selectAnswer(originalIndex, displayIndex, correctDisplayIndex) {
             nextBtn.onclick = () => {
                 nextBtn.classList.add('hidden');
                 if (explanationBtn) explanationBtn.classList.add('hidden');
+                if (reportBtn) reportBtn.classList.add('hidden');
                 currentQuestionIndex++;
                 if (currentQuestionIndex >= currentQuestions.length) {
                     finishQuiz();
@@ -1143,6 +1158,7 @@ function selectAnswer(originalIndex, displayIndex, correctDisplayIndex) {
         // 絆クイズは自動で次へ
         setTimeout(() => {
             if (explanationBtn) explanationBtn.classList.add('hidden');
+            if (reportBtn) reportBtn.classList.add('hidden');
             currentQuestionIndex++;
             if (currentQuestionIndex >= currentQuestions.length) {
                 finishBondQuiz();
@@ -1725,6 +1741,118 @@ function showOldRanking(seasonId, data) {
 document.getElementById('restartBtn').addEventListener('click', () => {
     showScreen('startScreen');
     updateStartScreen();
+});
+
+// ===== 💎獲得画面 =====
+function updateStoneGetScreen() {
+    const stoneInfo = document.getElementById('stoneGetStoneInfo');
+    if (stoneInfo) stoneInfo.textContent = `所持ストーン: 💎${userStats.stones}`;
+
+    // フォームリセット
+    document.getElementById('proposalQuestion').value = '';
+    document.getElementById('proposalOption1').value = '';
+    document.getElementById('proposalOption2').value = '';
+    document.getElementById('proposalOption3').value = '';
+    document.getElementById('proposalOption4').value = '';
+    document.getElementById('proposalDifficulty').value = '初級';
+    document.getElementById('proposalExplanation').value = '';
+}
+
+document.getElementById('submitProposalBtn')?.addEventListener('click', async () => {
+    const question = document.getElementById('proposalQuestion').value.trim();
+    const option1 = document.getElementById('proposalOption1').value.trim();
+    const option2 = document.getElementById('proposalOption2').value.trim();
+    const option3 = document.getElementById('proposalOption3').value.trim();
+    const option4 = document.getElementById('proposalOption4').value.trim();
+    const difficulty = document.getElementById('proposalDifficulty').value;
+    const explanation = document.getElementById('proposalExplanation').value.trim();
+
+    // バリデーション
+    if (!question) { alert('問題文を入力してください'); return; }
+    if (!option1 || !option2 || !option3 || !option4) {
+        alert('選択肢を4つすべて入力してください');
+        return;
+    }
+
+    try {
+        // Firestoreに保存
+        await db.collection('proposals').add({
+            uid: uid,
+            username: username,
+            question: question,
+            options: [option1, option2, option3, option4],
+            correct: 0, // 選択肢1が正解
+            difficulty: difficulty,
+            explanation: explanation,
+            status: 'pending', // pending / approved / rejected
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        // 💎+2
+        userStats.stones += 2;
+        await saveUserStats();
+
+        // 成功表示
+        alert(`提案ありがとうございます！💎2個を獲得しました！\n現在の💎: ${userStats.stones}個`);
+        updateStoneGetScreen();
+    } catch (error) {
+        console.error('提案送信エラー:', error);
+        alert('送信に失敗しました。もう一度お試しください。');
+    }
+});
+
+document.getElementById('backFromStoneGet')?.addEventListener('click', () => {
+    showScreen('startScreen');
+    updateStartScreen();
+});
+
+// ===== 間違い報告 =====
+function showReportModal(question) {
+    const modal = document.getElementById('reportModal');
+    const questionText = document.getElementById('reportQuestionText');
+    const detailInput = document.getElementById('reportDetail');
+
+    if (modal && questionText) {
+        questionText.textContent = `問題: ${question.question}`;
+        detailInput.value = '';
+        modal.classList.remove('hidden');
+
+        // 送信ボタンに問題データを紐づけ
+        const submitBtn = document.getElementById('submitReportBtn');
+        if (submitBtn) {
+            submitBtn.onclick = async () => {
+                const detail = detailInput.value.trim();
+                if (!detail) {
+                    alert('間違いの内容を入力してください');
+                    return;
+                }
+
+                try {
+                    await db.collection('reports').add({
+                        uid: uid,
+                        username: username,
+                        question: question.question,
+                        options: question.options,
+                        correct: question.correct,
+                        difficulty: question.difficulty,
+                        detail: detail,
+                        status: 'pending',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+
+                    alert('報告ありがとうございます！確認いたします。');
+                    modal.classList.add('hidden');
+                } catch (error) {
+                    console.error('報告送信エラー:', error);
+                    alert('送信に失敗しました。もう一度お試しください。');
+                }
+            };
+        }
+    }
+}
+
+document.getElementById('closeReportBtn')?.addEventListener('click', () => {
+    document.getElementById('reportModal').classList.add('hidden');
 });
 
 // アプリ初期化
