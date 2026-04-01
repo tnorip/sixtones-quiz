@@ -565,7 +565,9 @@ function getSeasonEndDate() {
 }
 
 // グローバル変数
-let username = '';
+let currentUser = null; // Firebase Auth user object
+let uid = '';           // Firebase Auth UID
+let username = '';      // 表示用ユーザー名
 let currentQuestions = [];
 let currentQuestionIndex = 0;
 let score = 0;
@@ -589,26 +591,55 @@ let userStats = {
     grade: '-'
 };
 
-// 初期化
-async function init() {
-    try {
-        const savedUsername = localStorage.getItem('sixtonesQuizUsername');
-
-        if (savedUsername) {
-            username = savedUsername;
-            await loadUserStats();
-            const gotBonus = await checkLoginBonus();
-            showScreen('startScreen');
-            updateStartScreen();
-            if (gotBonus) {
-                showLoginBonusNotice();
+// 初期化 - Firebase Auth の状態を監視
+function init() {
+    firebase.auth().onAuthStateChanged(async (user) => {
+        if (user) {
+            currentUser = user;
+            uid = user.uid;
+            try {
+                await loadUserStats();
+                if (!username) {
+                    // 初回ログイン: ユーザー名未設定
+                    showScreen('usernameScreen');
+                } else {
+                    const gotBonus = await checkLoginBonus();
+                    showScreen('startScreen');
+                    updateStartScreen();
+                    if (gotBonus) showLoginBonusNotice();
+                }
+            } catch (error) {
+                console.error('初期化エラー:', error);
+                showScreen('usernameScreen');
             }
         } else {
-            showScreen('usernameScreen');
+            currentUser = null;
+            uid = '';
+            username = '';
+            showScreen('loginScreen');
         }
+    });
+}
+
+// Googleログイン
+async function googleLogin() {
+    try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        await firebase.auth().signInWithPopup(provider);
     } catch (error) {
-        console.error('初期化エラー:', error);
-        showScreen('usernameScreen');
+        console.error('ログインエラー:', error);
+        if (error.code !== 'auth/popup-closed-by-user') {
+            alert('ログインに失敗しました。もう一度お試しください。');
+        }
+    }
+}
+
+// ログアウト
+async function logout() {
+    try {
+        await firebase.auth().signOut();
+    } catch (error) {
+        console.error('ログアウトエラー:', error);
     }
 }
 
@@ -624,11 +655,11 @@ function showLoginBonusNotice() {
 // 画面表示の切り替え
 function showScreen(screenId) {
     const screens = [
-        'loadingScreen', 'usernameScreen', 'startScreen',
+        'loadingScreen', 'loginScreen', 'usernameScreen', 'startScreen',
         'gameMenuScreen', 'quizScreen', 'resultScreen',
         'bondQuizScreen', 'bondResultScreen',
         'historyScreen', 'historyDetailScreen',
-        'profileScreen', 'helpScreen', 'toolScreen',
+        'profileScreen', 'helpScreen', 'toolScreen', 'stoneGetScreen',
         'rankingScreen', 'rankingHistoryScreen', 'oldRankingScreen'
     ];
     screens.forEach(id => {
@@ -650,7 +681,7 @@ function showScreen(screenId) {
     // ヘッダー: ホーム画面以外で表示
     const header = document.querySelector('.header');
     if (header) {
-        if (screenId === 'startScreen' || screenId === 'loadingScreen' || screenId === 'usernameScreen') {
+        if (screenId === 'startScreen' || screenId === 'loadingScreen' || screenId === 'loginScreen' || screenId === 'usernameScreen') {
             header.classList.remove('visible');
         } else {
             header.classList.add('visible');
@@ -660,7 +691,7 @@ function showScreen(screenId) {
     // コンテナレイアウト: ホーム画面は中央寄せ
     const container = document.querySelector('.container');
     if (container) {
-        container.classList.toggle('home-layout', screenId === 'startScreen' || screenId === 'usernameScreen');
+        container.classList.toggle('home-layout', screenId === 'startScreen' || screenId === 'usernameScreen' || screenId === 'loginScreen');
     }
 
     window.scrollTo(0, 0);
@@ -678,11 +709,12 @@ function getDefaultUserStats() {
 // ユーザー統計の読み込み
 async function loadUserStats() {
     try {
-        const userDocRef = db.collection('users').doc(username);
+        const userDocRef = db.collection('users').doc(uid);
         const userDoc = await userDocRef.get();
 
         if (userDoc.exists) {
             const data = userDoc.data();
+            username = data.username || '';
             userStats = {
                 points: data.points || 0,
                 stones: data.stones || 0,
@@ -696,6 +728,7 @@ async function loadUserStats() {
                 grade: data.grade || '-'
             };
         } else {
+            username = '';
             userStats = getDefaultUserStats();
         }
     } catch (error) {
@@ -707,8 +740,9 @@ async function loadUserStats() {
 // ユーザーデータの保存
 async function saveUserStats() {
     try {
-        const userDocRef = db.collection('users').doc(username);
+        const userDocRef = db.collection('users').doc(uid);
         await userDocRef.set({
+            uid: uid,
             username: username,
             points: userStats.points,
             stones: userStats.stones,
@@ -730,7 +764,7 @@ async function saveUserStats() {
 // クイズ履歴の保存
 async function saveHistory(questionData, userAnswer, isCorrect, earnedPoints, mode, grade) {
     try {
-        const historyRef = db.collection('history').doc(username)
+        const historyRef = db.collection('history').doc(uid)
             .collection('items');
         await historyRef.add({
             question: questionData.question,
@@ -753,7 +787,7 @@ async function saveHistory(questionData, userAnswer, isCorrect, earnedPoints, mo
 // 履歴の読み込み
 async function loadHistory() {
     try {
-        const historyRef = db.collection('history').doc(username)
+        const historyRef = db.collection('history').doc(uid)
             .collection('items');
         const snapshot = await historyRef
             .orderBy('timestamp', 'desc')
@@ -837,14 +871,6 @@ function showAnswerEffect(isCorrect) {
 function updateStartScreen() {
     document.getElementById('usernameDisplay').textContent = username;
 
-    // ランク・ポイント・ストーン表示（旧要素 - 互換用）
-    const rankDisplay = document.getElementById('rankDisplay');
-    if (rankDisplay) rankDisplay.textContent = userStats.rank;
-    const pointsDisplay = document.getElementById('pointsDisplay');
-    if (pointsDisplay) pointsDisplay.textContent = userStats.points + 'P';
-    const stonesDisplay = document.getElementById('stonesDisplay');
-    if (stonesDisplay) stonesDisplay.textContent = '💎 ' + userStats.stones;
-
     // ステータスバー更新
     const statusRank = document.getElementById('statusRankDisplay');
     if (statusRank) statusRank.textContent = userStats.rank;
@@ -855,7 +881,13 @@ function updateStartScreen() {
 
 }
 
-// ユーザー名設定
+// Googleログインボタン
+document.getElementById('googleLoginBtn').addEventListener('click', googleLogin);
+
+// ログアウトボタン
+document.getElementById('logoutBtn').addEventListener('click', logout);
+
+// ユーザー名設定（初回ログイン後）
 document.getElementById('setUsernameBtn').addEventListener('click', async () => {
     const input = document.getElementById('usernameInput').value.trim();
     if (!input) {
@@ -864,8 +896,7 @@ document.getElementById('setUsernameBtn').addEventListener('click', async () => 
     }
 
     username = input;
-    localStorage.setItem('sixtonesQuizUsername', username);
-    await loadUserStats();
+    await saveUserStats();
     const gotBonus = await checkLoginBonus();
     showScreen('startScreen');
     updateStartScreen();
@@ -876,34 +907,6 @@ document.getElementById('usernameInput').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         document.getElementById('setUsernameBtn').click();
     }
-});
-
-// ユーザー名変更
-document.getElementById('changeUsernameBtn').addEventListener('click', () => {
-    document.getElementById('usernameEditInput').value = username;
-    document.getElementById('changeUsernameBtn').classList.add('hidden');
-    document.getElementById('usernameEditArea').classList.remove('hidden');
-});
-
-document.getElementById('saveUsernameBtn').addEventListener('click', async () => {
-    const newUsername = document.getElementById('usernameEditInput').value.trim();
-    if (!newUsername) {
-        alert('ユーザー名を入力してください');
-        return;
-    }
-
-    username = newUsername;
-    localStorage.setItem('sixtonesQuizUsername', username);
-    await loadUserStats();
-    updateStartScreen();
-
-    document.getElementById('changeUsernameBtn').classList.remove('hidden');
-    document.getElementById('usernameEditArea').classList.add('hidden');
-});
-
-document.getElementById('cancelUsernameBtn').addEventListener('click', () => {
-    document.getElementById('changeUsernameBtn').classList.remove('hidden');
-    document.getElementById('usernameEditArea').classList.add('hidden');
 });
 
 // ===== ホーム画面ボタン =====
@@ -929,6 +932,11 @@ document.getElementById('viewProfileBtn').addEventListener('click', () => {
 document.getElementById('viewToolBtn').addEventListener('click', () => {
     showScreen('toolScreen');
     updateToolScreen();
+});
+
+document.getElementById('viewStoneBtn').addEventListener('click', () => {
+    showScreen('stoneGetScreen');
+    updateStoneGetScreen();
 });
 
 // ===== ゲームメニュー画面 =====
@@ -996,12 +1004,14 @@ function showQuestion() {
     document.getElementById('scoreDisplay').textContent = `正解: ${score}`;
     document.getElementById('questionText').textContent = question.question;
 
-    // 解説ボタンを非表示にリセット
+    // 解説ボタン・報告ボタンを非表示にリセット
     const explanationBtn = document.getElementById('explanationBtn');
     if (explanationBtn) {
         explanationBtn.classList.add('hidden');
         explanationBtn.onclick = null;
     }
+    const reportBtn = document.getElementById('reportBtn');
+    if (reportBtn) reportBtn.classList.add('hidden');
 
     const optionsContainer = document.getElementById('optionsContainer');
     optionsContainer.innerHTML = '';
@@ -1120,6 +1130,13 @@ function selectAnswer(originalIndex, displayIndex, correctDisplayIndex) {
         explanationBtn.onclick = () => showExplanationModal(question.explanation);
     }
 
+    // 回答後に間違い報告ボタンを表示
+    const reportBtn = document.getElementById('reportBtn');
+    if (reportBtn) {
+        reportBtn.classList.remove('hidden');
+        reportBtn.onclick = () => showReportModal(question);
+    }
+
     // フリープレイは手動で次へ（解説を読む時間を確保）
     if (currentMode === 'free') {
         const nextBtn = document.getElementById('nextQuestionBtn');
@@ -1128,6 +1145,7 @@ function selectAnswer(originalIndex, displayIndex, correctDisplayIndex) {
             nextBtn.onclick = () => {
                 nextBtn.classList.add('hidden');
                 if (explanationBtn) explanationBtn.classList.add('hidden');
+                if (reportBtn) reportBtn.classList.add('hidden');
                 currentQuestionIndex++;
                 if (currentQuestionIndex >= currentQuestions.length) {
                     finishQuiz();
@@ -1140,6 +1158,7 @@ function selectAnswer(originalIndex, displayIndex, correctDisplayIndex) {
         // 絆クイズは自動で次へ
         setTimeout(() => {
             if (explanationBtn) explanationBtn.classList.add('hidden');
+            if (reportBtn) reportBtn.classList.add('hidden');
             currentQuestionIndex++;
             if (currentQuestionIndex >= currentQuestions.length) {
                 finishBondQuiz();
@@ -1466,8 +1485,6 @@ document.getElementById('profileSaveUsernameBtn')?.addEventListener('click', asy
     }
 
     username = newName;
-    localStorage.setItem('sixtonesQuizUsername', username);
-    await loadUserStats();
     await saveUserStats();
     updateProfileScreen();
     updateStartScreen();
@@ -1724,6 +1741,118 @@ function showOldRanking(seasonId, data) {
 document.getElementById('restartBtn').addEventListener('click', () => {
     showScreen('startScreen');
     updateStartScreen();
+});
+
+// ===== 💎獲得画面 =====
+function updateStoneGetScreen() {
+    const stoneInfo = document.getElementById('stoneGetStoneInfo');
+    if (stoneInfo) stoneInfo.textContent = `所持ストーン: 💎${userStats.stones}`;
+
+    // フォームリセット
+    document.getElementById('proposalQuestion').value = '';
+    document.getElementById('proposalOption1').value = '';
+    document.getElementById('proposalOption2').value = '';
+    document.getElementById('proposalOption3').value = '';
+    document.getElementById('proposalOption4').value = '';
+    document.getElementById('proposalDifficulty').value = '初級';
+    document.getElementById('proposalExplanation').value = '';
+}
+
+document.getElementById('submitProposalBtn')?.addEventListener('click', async () => {
+    const question = document.getElementById('proposalQuestion').value.trim();
+    const option1 = document.getElementById('proposalOption1').value.trim();
+    const option2 = document.getElementById('proposalOption2').value.trim();
+    const option3 = document.getElementById('proposalOption3').value.trim();
+    const option4 = document.getElementById('proposalOption4').value.trim();
+    const difficulty = document.getElementById('proposalDifficulty').value;
+    const explanation = document.getElementById('proposalExplanation').value.trim();
+
+    // バリデーション
+    if (!question) { alert('問題文を入力してください'); return; }
+    if (!option1 || !option2 || !option3 || !option4) {
+        alert('選択肢を4つすべて入力してください');
+        return;
+    }
+
+    try {
+        // Firestoreに保存
+        await db.collection('proposals').add({
+            uid: uid,
+            username: username,
+            question: question,
+            options: [option1, option2, option3, option4],
+            correct: 0, // 選択肢1が正解
+            difficulty: difficulty,
+            explanation: explanation,
+            status: 'pending', // pending / approved / rejected
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        // 💎+2
+        userStats.stones += 2;
+        await saveUserStats();
+
+        // 成功表示
+        alert(`提案ありがとうございます！💎2個を獲得しました！\n現在の💎: ${userStats.stones}個`);
+        updateStoneGetScreen();
+    } catch (error) {
+        console.error('提案送信エラー:', error);
+        alert('送信に失敗しました。もう一度お試しください。');
+    }
+});
+
+document.getElementById('backFromStoneGet')?.addEventListener('click', () => {
+    showScreen('startScreen');
+    updateStartScreen();
+});
+
+// ===== 間違い報告 =====
+function showReportModal(question) {
+    const modal = document.getElementById('reportModal');
+    const questionText = document.getElementById('reportQuestionText');
+    const detailInput = document.getElementById('reportDetail');
+
+    if (modal && questionText) {
+        questionText.textContent = `問題: ${question.question}`;
+        detailInput.value = '';
+        modal.classList.remove('hidden');
+
+        // 送信ボタンに問題データを紐づけ
+        const submitBtn = document.getElementById('submitReportBtn');
+        if (submitBtn) {
+            submitBtn.onclick = async () => {
+                const detail = detailInput.value.trim();
+                if (!detail) {
+                    alert('間違いの内容を入力してください');
+                    return;
+                }
+
+                try {
+                    await db.collection('reports').add({
+                        uid: uid,
+                        username: username,
+                        question: question.question,
+                        options: question.options,
+                        correct: question.correct,
+                        difficulty: question.difficulty,
+                        detail: detail,
+                        status: 'pending',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+
+                    alert('報告ありがとうございます！確認いたします。');
+                    modal.classList.add('hidden');
+                } catch (error) {
+                    console.error('報告送信エラー:', error);
+                    alert('送信に失敗しました。もう一度お試しください。');
+                }
+            };
+        }
+    }
+}
+
+document.getElementById('closeReportBtn')?.addEventListener('click', () => {
+    document.getElementById('reportModal').classList.add('hidden');
 });
 
 // アプリ初期化

@@ -44,12 +44,23 @@
                 <h2 class="title">読み込み中...</h2>
             </div>
 
-            <!-- ユーザー名設定画面 -->
-            <div id="usernameScreen" class="center-screen hidden">
+            <!-- ログイン画面 -->
+            <div id="loginScreen" class="center-screen hidden">
                 <h2 class="title">Welcome!</h2>
                 <p class="description">
-                    まずはユーザー名を設定してください<br/>
-                    全国ランキングに表示されます
+                    Googleアカウントでログインして<br/>全国のファンとランキングで競おう！
+                </p>
+                <button id="googleLoginBtn" class="btn-google">
+                    <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59a14.5 14.5 0 010-9.18l-7.98-6.19a24.01 24.01 0 000 21.56l7.98-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                    Googleでログイン
+                </button>
+            </div>
+
+            <!-- ユーザー名設定画面（初回ログイン後） -->
+            <div id="usernameScreen" class="center-screen hidden">
+                <h2 class="title">ユーザー名設定</h2>
+                <p class="description">
+                    ランキングに表示される名前を設定してください
                 </p>
                 <input
                     type="text"
@@ -116,11 +127,11 @@
 
                 <!-- ナビゲーション 下段 -->
                 <div class="home-nav-grid home-nav-grid-2col">
-                    <button id="viewStoneBtn" class="home-nav-btn home-nav-btn-disabled">
+                    <button id="viewStoneBtn" class="home-nav-btn">
                         <span class="home-nav-icon">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><polygon points="12,2 15.5,8.5 22,9.5 17,14.5 18.5,21 12,17.5 5.5,21 7,14.5 2,9.5 8.5,8.5" stroke="currentColor" stroke-width="2" fill="none"/><line x1="12" y1="8" x2="12" y2="14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="9" y1="11" x2="15" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                         </span>
-                        <span class="home-nav-label">💎 獲得<br><span class="home-nav-sub">今後追加予定</span></span>
+                        <span class="home-nav-label">💎 獲得</span>
                     </button>
                     <button id="viewHelpBtn" class="home-nav-btn">
                         <span class="home-nav-icon">
@@ -130,16 +141,8 @@
                     </button>
                 </div>
 
-                <!-- 非表示の旧要素（JS互換用） -->
-                <div id="usernameEditArea" class="hidden">
-                    <input type="text" id="usernameEditInput" class="input" maxlength="20" />
-                    <button id="saveUsernameBtn" class="small-btn">変更</button>
-                    <button id="cancelUsernameBtn" class="small-btn">キャンセル</button>
-                </div>
-                <button id="changeUsernameBtn" class="hidden">ユーザー名を変更</button>
-                <span id="rankDisplay" class="hidden"></span>
-                <span id="pointsDisplay" class="hidden"></span>
-                <span id="stonesDisplay" class="hidden"></span>
+                <!-- ログアウト -->
+                <button id="logoutBtn" class="btn-logout">ログアウト</button>
             </div>
 
             <!-- ゲームメニュー画面（gameMenuScreen） -->
@@ -220,6 +223,7 @@
 
                 <div class="quiz-actions">
                     <button id="explanationBtn" class="btn-explanation hidden">📖 解説を見る</button>
+                    <button id="reportBtn" class="btn-report hidden">⚠ 間違いを報告</button>
                     <button id="nextQuestionBtn" class="btn-next hidden">次の問題へ →</button>
                 </div>
             </div>
@@ -394,6 +398,7 @@
                     <h3 class="help-section-title">ストーン（💎）</h3>
                     <p class="help-text">
                         毎日ログインで💎1個もらえます。<br>
+                        クイズ提案で💎2個もらえます。<br>
                         絆クイズの挑戦や、履歴件数の拡張に使えます。
                     </p>
                 </div>
@@ -460,6 +465,58 @@
                 <button id="backFromOldRanking" class="btn-back">← 過去シーズン一覧に戻る</button>
             </div>
 
+            <!-- 💎獲得画面（stoneGetScreen） -->
+            <div id="stoneGetScreen" class="center-screen hidden">
+                <h2 class="title">💎 獲得</h2>
+                <p class="stone-info" id="stoneGetStoneInfo">所持ストーン: 💎0</p>
+
+                <div class="stone-get-section">
+                    <h3 class="stone-get-section-title">クイズ提案で💎2個GET！</h3>
+                    <p class="stone-get-description">新しいクイズ問題を提案してください。採用されなくても💎2個もらえます！</p>
+
+                    <div class="proposal-form">
+                        <label class="form-label">問題文 <span class="required">*</span></label>
+                        <textarea id="proposalQuestion" class="form-textarea" placeholder="例: SixTONESの○○は？" maxlength="200"></textarea>
+
+                        <label class="form-label">選択肢（4つ） <span class="required">*</span></label>
+                        <input type="text" id="proposalOption1" class="input" placeholder="選択肢1（正解）" maxlength="50" />
+                        <input type="text" id="proposalOption2" class="input" placeholder="選択肢2" maxlength="50" />
+                        <input type="text" id="proposalOption3" class="input" placeholder="選択肢3" maxlength="50" />
+                        <input type="text" id="proposalOption4" class="input" placeholder="選択肢4" maxlength="50" />
+
+                        <label class="form-label">難易度 <span class="required">*</span></label>
+                        <select id="proposalDifficulty" class="form-select">
+                            <option value="初級">初級</option>
+                            <option value="中級">中級</option>
+                            <option value="上級">上級</option>
+                        </select>
+
+                        <label class="form-label">解説（任意）</label>
+                        <textarea id="proposalExplanation" class="form-textarea" placeholder="解説があれば入力してください" maxlength="300"></textarea>
+
+                        <button id="submitProposalBtn" class="btn">
+                            <span>提案して💎2個GET</span>
+                        </button>
+                    </div>
+                </div>
+
+                <button id="backFromStoneGet" class="btn-back">← ホームに戻る</button>
+            </div>
+
+            <!-- 間違い報告モーダル -->
+            <div id="reportModal" class="modal hidden">
+                <div class="modal-content">
+                    <h3>間違いを報告</h3>
+                    <p class="report-question-text" id="reportQuestionText"></p>
+                    <label class="form-label">どこが間違っていますか？</label>
+                    <textarea id="reportDetail" class="form-textarea" placeholder="正解や間違いの内容を教えてください" maxlength="300"></textarea>
+                    <div class="modal-buttons">
+                        <button id="submitReportBtn" class="btn">送信</button>
+                        <button id="closeReportBtn" class="btn-back">キャンセル</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- 解説モーダル -->
             <div id="explanationModal" class="modal hidden">
                 <div class="modal-content">
@@ -474,6 +531,7 @@
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
     <!-- Firebase Config -->
