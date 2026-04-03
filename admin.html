@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SixTONESクイズ 管理画面</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Noto Sans JP', sans-serif; background: #1a1a2e; color: #eee; padding: 20px; }
+        h1 { color: #daa520; margin-bottom: 20px; font-size: 1.5rem; }
+        h2 { color: #daa520; margin: 30px 0 15px; font-size: 1.2rem; border-bottom: 1px solid #daa520; padding-bottom: 8px; }
+
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab { padding: 10px 20px; border: 1px solid #555; border-radius: 8px; background: transparent; color: #ccc; cursor: pointer; font-size: 0.9rem; }
+        .tab.active { background: #daa520; color: #000; border-color: #daa520; font-weight: bold; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .card-status { font-size: 0.75rem; padding: 3px 10px; border-radius: 12px; }
+        .status-pending { background: #f0ad4e; color: #000; }
+        .status-approved { background: #5cb85c; color: #fff; }
+        .status-rejected { background: #d9534f; color: #fff; }
+
+        .card-question { font-size: 1rem; font-weight: bold; margin-bottom: 8px; }
+        .card-options { list-style: none; margin-bottom: 8px; }
+        .card-options li { padding: 4px 0; font-size: 0.85rem; color: #ccc; }
+        .card-options li.correct { color: #5cb85c; font-weight: bold; }
+        .card-meta { font-size: 0.8rem; color: #888; margin-bottom: 10px; }
+        .card-meta span { margin-right: 12px; }
+
+        .card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: bold; }
+        .btn-approve { background: #5cb85c; color: #fff; }
+        .btn-reject { background: #d9534f; color: #fff; }
+        .btn-delete { background: #333; color: #aaa; border: 1px solid #555; }
+        .btn:hover { opacity: 0.85; }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .stats { display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
+        .stat-card { background: rgba(218,165,32,0.1); border: 1px solid rgba(218,165,32,0.3); border-radius: 8px; padding: 12px 20px; text-align: center; }
+        .stat-value { font-size: 1.5rem; font-weight: bold; color: #daa520; }
+        .stat-label { font-size: 0.75rem; color: #999; }
+
+        .report-card { border-left: 3px solid #d9534f; }
+        .report-detail { background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; margin: 8px 0; font-size: 0.85rem; color: #ff9999; }
+
+        .filter { margin-bottom: 15px; }
+        .filter select { padding: 8px; border-radius: 6px; background: #2a2a4e; color: #eee; border: 1px solid #555; }
+
+        .empty { text-align: center; color: #666; padding: 40px; }
+
+        .login-area { text-align: center; padding: 60px 20px; }
+        .btn-google { display: inline-flex; align-items: center; gap: 10px; padding: 12px 24px; background: #fff; color: #333; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>SixTONESクイズ 管理画面</h1>
+
+    <!-- ログイン前 -->
+    <div id="loginArea" class="login-area">
+        <p style="margin-bottom:20px;color:#999;">管理者としてログインしてください</p>
+        <button id="adminLoginBtn" class="btn-google">
+            <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59a14.5 14.5 0 010-9.18l-7.98-6.19a24.01 24.01 0 000 21.56l7.98-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+            Googleでログイン
+        </button>
+    </div>
+
+    <!-- ログイン後 -->
+    <div id="adminContent" style="display:none;">
+        <!-- 統計 -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="statQuizCount">-</div>
+                <div class="stat-label">クイズ総数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statProposalCount">-</div>
+                <div class="stat-label">未確認の提案</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statReportCount">-</div>
+                <div class="stat-label">未確認の報告</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statUserCount">-</div>
+                <div class="stat-label">ユーザー数</div>
+            </div>
+        </div>
+
+        <!-- タブ -->
+        <div class="tabs">
+            <button class="tab active" data-tab="proposals">クイズ提案</button>
+            <button class="tab" data-tab="reports">間違い報告</button>
+            <button class="tab" data-tab="quizzes">クイズ一覧</button>
+        </div>
+
+        <!-- 提案タブ -->
+        <div id="proposalsTab" class="tab-content active">
+            <div class="filter">
+                <select id="proposalFilter">
+                    <option value="pending">未確認</option>
+                    <option value="approved">採用済み</option>
+                    <option value="rejected">却下済み</option>
+                    <option value="all">すべて</option>
+                </select>
+            </div>
+            <div id="proposalList"></div>
+        </div>
+
+        <!-- 報告タブ -->
+        <div id="reportsTab" class="tab-content">
+            <div class="filter">
+                <select id="reportFilter">
+                    <option value="pending">未確認</option>
+                    <option value="resolved">対応済み</option>
+                    <option value="all">すべて</option>
+                </select>
+            </div>
+            <div id="reportList"></div>
+        </div>
+
+        <!-- クイズ一覧タブ -->
+        <div id="quizzesTab" class="tab-content">
+            <div class="filter">
+                <select id="quizFilter">
+                    <option value="all">すべて</option>
+                    <option value="初級">初級</option>
+                    <option value="中級">中級</option>
+                    <option value="上級">上級</option>
+                </select>
+            </div>
+            <div id="quizList"></div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script>
+// ===== 認証 =====
+document.getElementById('adminLoginBtn').addEventListener('click', async () => {
+    try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        await firebase.auth().signInWithPopup(provider);
+    } catch (e) {
+        console.error(e);
+    }
+});
+
+firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+        document.getElementById('loginArea').style.display = 'none';
+        document.getElementById('adminContent').style.display = 'block';
+        loadAll();
+    } else {
+        document.getElementById('loginArea').style.display = 'block';
+        document.getElementById('adminContent').style.display = 'none';
+    }
+});
+
+// ===== タブ切り替え =====
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab + 'Tab').classList.add('active');
+    });
+});
+
+// ===== データ読み込み =====
+let allProposals = [];
+let allReports = [];
+let allQuizzes = [];
+
+async function loadAll() {
+    await Promise.all([loadStats(), loadProposals(), loadReports(), loadQuizzes()]);
+}
+
+async function loadStats() {
+    try {
+        const [quizSnap, proposalSnap, reportSnap, userSnap] = await Promise.all([
+            db.collection('quizzes').get(),
+            db.collection('proposals').where('status', '==', 'pending').get(),
+            db.collection('reports').where('status', '==', 'pending').get(),
+            db.collection('users').get()
+        ]);
+        document.getElementById('statQuizCount').textContent = quizSnap.size;
+        document.getElementById('statProposalCount').textContent = proposalSnap.size;
+        document.getElementById('statReportCount').textContent = reportSnap.size;
+        document.getElementById('statUserCount').textContent = userSnap.size;
+    } catch (e) { console.error(e); }
+}
+
+// ===== 提案 =====
+async function loadProposals() {
+    try {
+        const snap = await db.collection('proposals').orderBy('createdAt', 'desc').get();
+        allProposals = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderProposals();
+    } catch (e) { console.error(e); }
+}
+
+function renderProposals() {
+    const filter = document.getElementById('proposalFilter').value;
+    const filtered = filter === 'all' ? allProposals : allProposals.filter(p => p.status === filter);
+    const list = document.getElementById('proposalList');
+
+    if (filtered.length === 0) {
+        list.innerHTML = '<div class="empty">該当する提案はありません</div>';
+        return;
+    }
+
+    list.innerHTML = filtered.map(p => `
+        <div class="card" id="proposal-${p.id}">
+            <div class="card-header">
+                <span class="card-status status-${p.status}">${statusLabel(p.status)}</span>
+                <span class="card-meta">${p.username || '不明'}</span>
+            </div>
+            <div class="card-question">${esc(p.question)}</div>
+            <ol class="card-options">
+                ${p.options.map((o, i) => `<li class="${i === p.correct ? 'correct' : ''}">${esc(o)}${i === p.correct ? ' ✓' : ''}</li>`).join('')}
+            </ol>
+            <div class="card-meta">
+                <span>難易度: ${p.difficulty}</span>
+                <span>解説: ${p.explanation || 'なし'}</span>
+                <span>${formatDate(p.createdAt)}</span>
+            </div>
+            ${p.status === 'pending' ? `
+                <div class="card-actions">
+                    <button class="btn btn-approve" onclick="approveProposal('${p.id}')">採用（💎3個付与）</button>
+                    <button class="btn btn-reject" onclick="rejectProposal('${p.id}')">却下</button>
+                </div>
+            ` : ''}
+        </div>
+    `).join('');
+}
+
+document.getElementById('proposalFilter').addEventListener('change', renderProposals);
+
+async function approveProposal(id) {
+    if (!confirm('この提案を採用しますか？\nクイズに追加され、提案者に💎3個が付与されます。')) return;
+
+    const proposal = allProposals.find(p => p.id === id);
+    if (!proposal) return;
+
+    try {
+        // 1. quizzesコレクションに追加
+        await db.collection('quizzes').add({
+            question: proposal.question,
+            options: proposal.options,
+            correct: proposal.correct,
+            difficulty: proposal.difficulty,
+            randomizeOptions: true,
+            explanation: proposal.explanation || '',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        // 2. 提案者のストーンを+3
+        if (proposal.uid) {
+            const userRef = db.collection('users').doc(proposal.uid);
+            const userDoc = await userRef.get();
+            if (userDoc.exists) {
+                const currentStones = userDoc.data().stones || 0;
+                await userRef.update({ stones: currentStones + 3 });
+            }
+        }
+
+        // 3. 提案のステータスを更新
+        await db.collection('proposals').doc(id).update({
+            status: 'approved',
+            approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        alert('採用しました！クイズに追加され、提案者に💎3個が付与されました。');
+        await loadAll();
+    } catch (e) {
+        console.error(e);
+        alert('エラーが発生しました: ' + e.message);
+    }
+}
+
+async function rejectProposal(id) {
+    if (!confirm('この提案を却下しますか？')) return;
+
+    try {
+        await db.collection('proposals').doc(id).update({
+            status: 'rejected',
+            rejectedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        await loadAll();
+    } catch (e) {
+        console.error(e);
+        alert('エラーが発生しました: ' + e.message);
+    }
+}
+
+// ===== 報告 =====
+async function loadReports() {
+    try {
+        const snap = await db.collection('reports').orderBy('createdAt', 'desc').get();
+        allReports = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderReports();
+    } catch (e) { console.error(e); }
+}
+
+function renderReports() {
+    const filter = document.getElementById('reportFilter').value;
+    const filtered = filter === 'all' ? allReports : allReports.filter(r => r.status === filter);
+    const list = document.getElementById('reportList');
+
+    if (filtered.length === 0) {
+        list.innerHTML = '<div class="empty">該当する報告はありません</div>';
+        return;
+    }
+
+    list.innerHTML = filtered.map(r => `
+        <div class="card report-card" id="report-${r.id}">
+            <div class="card-header">
+                <span class="card-status status-${r.status}">${r.status === 'pending' ? '未確認' : '対応済み'}</span>
+                <span class="card-meta">${r.username || '不明'}</span>
+            </div>
+            <div class="card-question">${esc(r.question)}</div>
+            <ol class="card-options">
+                ${(r.options || []).map((o, i) => `<li class="${i === r.correct ? 'correct' : ''}">${esc(o)}${i === r.correct ? ' ✓' : ''}</li>`).join('')}
+            </ol>
+            <div class="report-detail">${esc(r.detail)}</div>
+            <div class="card-meta">
+                <span>難易度: ${r.difficulty || '-'}</span>
+                <span>${formatDate(r.createdAt)}</span>
+            </div>
+            ${r.status === 'pending' ? `
+                <div class="card-actions">
+                    <button class="btn btn-approve" onclick="resolveReport('${r.id}')">対応済みにする</button>
+                </div>
+            ` : ''}
+        </div>
+    `).join('');
+}
+
+document.getElementById('reportFilter').addEventListener('change', renderReports);
+
+async function resolveReport(id) {
+    try {
+        await db.collection('reports').doc(id).update({
+            status: 'resolved',
+            resolvedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        await loadAll();
+    } catch (e) {
+        console.error(e);
+        alert('エラーが発生しました: ' + e.message);
+    }
+}
+
+// ===== クイズ一覧 =====
+async function loadQuizzes() {
+    try {
+        const snap = await db.collection('quizzes').get();
+        allQuizzes = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderQuizzes();
+    } catch (e) { console.error(e); }
+}
+
+function renderQuizzes() {
+    const filter = document.getElementById('quizFilter').value;
+    const filtered = filter === 'all' ? allQuizzes : allQuizzes.filter(q => q.difficulty === filter);
+    const list = document.getElementById('quizList');
+
+    if (filtered.length === 0) {
+        list.innerHTML = '<div class="empty">クイズがありません</div>';
+        return;
+    }
+
+    list.innerHTML = filtered.map(q => `
+        <div class="card" id="quiz-${q.id}">
+            <div class="card-question">${esc(q.question)}</div>
+            <ol class="card-options">
+                ${q.options.map((o, i) => `<li class="${i === q.correct ? 'correct' : ''}">${esc(o)}${i === q.correct ? ' ✓' : ''}</li>`).join('')}
+            </ol>
+            <div class="card-meta">
+                <span>難易度: ${q.difficulty}</span>
+                <span>解説: ${q.explanation || 'なし'}</span>
+            </div>
+            <div class="card-actions">
+                <button class="btn btn-delete" onclick="deleteQuiz('${q.id}')">削除</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+document.getElementById('quizFilter').addEventListener('change', renderQuizzes);
+
+async function deleteQuiz(id) {
+    if (!confirm('このクイズを削除しますか？')) return;
+
+    try {
+        await db.collection('quizzes').doc(id).delete();
+        await loadAll();
+    } catch (e) {
+        console.error(e);
+        alert('エラーが発生しました: ' + e.message);
+    }
+}
+
+// ===== ユーティリティ =====
+function statusLabel(status) {
+    switch (status) {
+        case 'pending': return '未確認';
+        case 'approved': return '採用済み';
+        case 'rejected': return '却下済み';
+        default: return status;
+    }
+}
+
+function formatDate(ts) {
+    if (!ts || !ts.toDate) return '';
+    return ts.toDate().toLocaleString('ja-JP');
+}
+
+function esc(str) {
+    if (!str) return '';
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+    </script>
+</body>
+</html>
