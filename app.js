@@ -1308,12 +1308,10 @@ document.getElementById('submitProposalBtn')?.addEventListener('click', async ()
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        // 💎+2
-        userStats.stones += 2;
-        await saveUserStats();
+        // 💎は採用時に付与（管理者が承認後）
 
         // 成功表示
-        alert(`提案ありがとうございます！💎2個を獲得しました！\n現在の💎: ${userStats.stones}個`);
+        alert('提案ありがとうございます！\n採用されると💎3個がもらえます。');
         updateStoneGetScreen();
     } catch (error) {
         console.error('提案送信エラー:', error);
