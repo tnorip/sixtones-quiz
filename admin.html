@@ -141,6 +141,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="firebase-config.js"></script>
     <script>
+// ===== 管理者UID =====
+const ADMIN_UID = 'uqCuJ40DKTV5u3PFHAFG3ogwrnX2';
+
 // ===== 認証 =====
 document.getElementById('adminLoginBtn').addEventListener('click', async () => {
     try {
@@ -153,6 +156,11 @@ document.getElementById('adminLoginBtn').addEventListener('click', async () => {
 
 firebase.auth().onAuthStateChanged(user => {
     if (user) {
+        if (user.uid !== ADMIN_UID) {
+            alert('管理者権限がありません。');
+            firebase.auth().signOut();
+            return;
+        }
         document.getElementById('loginArea').style.display = 'none';
         document.getElementById('adminContent').style.display = 'block';
         loadAll();
