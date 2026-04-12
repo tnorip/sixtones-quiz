@@ -14,7 +14,8 @@ async function loadQuizData() {
                 correct: data.correct,
                 difficulty: data.difficulty,
                 randomizeOptions: data.randomizeOptions !== undefined ? data.randomizeOptions : true,
-                explanation: data.explanation || ''
+                explanation: data.explanation || '',
+                proposedBy: data.proposedBy || ''
             };
         });
         console.log(`クイズデータ読み込み完了: ${quizData.length}問`);
@@ -113,6 +114,10 @@ let userStats = {
 
 // 初期化 - Firebase Auth の状態を監視
 function init() {
+    // リダイレクトログインの結果を処理（フォールバック時用）
+    firebase.auth().getRedirectResult().catch(err => {
+        console.log('リダイレクト結果:', err.code || 'none');
+    });
     firebase.auth().onAuthStateChanged(async (user) => {
         if (user) {
             currentUser = user;
@@ -145,14 +150,14 @@ function init() {
 async function googleLogin() {
     try {
         // Capacitorネイティブアプリではプラグインで native Google Sign-In を使用
-        if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+        const isNative = window.Capacitor && window.Capacitor.isNativePlatform();
+        const hasPlugin = isNative && window.Capacitor.Plugins && window.Capacitor.Plugins.FirebaseAuthentication;
+        if (hasPlugin) {
             const FirebaseAuthentication = window.Capacitor.Plugins.FirebaseAuthentication;
-            if (FirebaseAuthentication) {
-                const result = await FirebaseAuthentication.signInWithGoogle();
-                const credential = firebase.auth.GoogleAuthProvider.credential(result.credential.idToken);
-                await firebase.auth().signInWithCredential(credential);
-                return;
-            }
+            const result = await FirebaseAuthentication.signInWithGoogle();
+            const credential = firebase.auth.GoogleAuthProvider.credential(result.credential.idToken);
+            await firebase.auth().signInWithCredential(credential);
+            return;
         }
         // Web: ポップアップ方式
         const provider = new firebase.auth.GoogleAuthProvider();
@@ -160,8 +165,7 @@ async function googleLogin() {
     } catch (error) {
         console.error('ログインエラー:', error);
         if (error.code !== 'auth/popup-closed-by-user' &&
-            error.code !== 'auth/cancelled-popup-request' &&
-            error.message !== 'User cancelled the sign-in flow') {
+            error.code !== 'auth/cancelled-popup-request') {
             alert('ログインに失敗しました。もう一度お試しください。');
         }
     }
@@ -543,6 +547,17 @@ function showQuestion() {
         `問題 ${currentQuestionIndex + 1}/${totalQ}`;
     document.getElementById('scoreDisplay').textContent = `正解: ${score}`;
     document.getElementById('questionText').textContent = question.question;
+
+    // 提案者名の表示
+    const proposedByEl = document.getElementById('proposedBy');
+    if (proposedByEl) {
+        if (question.proposedBy) {
+            proposedByEl.textContent = `提案: ${question.proposedBy}`;
+            proposedByEl.classList.remove('hidden');
+        } else {
+            proposedByEl.classList.add('hidden');
+        }
+    }
 
     // 解説ボタン・報告ボタンを非表示にリセット
     const explanationBtn = document.getElementById('explanationBtn');
