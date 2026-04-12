@@ -148,24 +148,31 @@ function init() {
 // Googleログイン
 async function googleLogin() {
     try {
+        // デバッグ: どのパスが実行されるか確認
+        const isNative = window.Capacitor && window.Capacitor.isNativePlatform();
+        const hasPlugin = isNative && window.Capacitor.Plugins && window.Capacitor.Plugins.FirebaseAuthentication;
+        console.log('[AUTH DEBUG] isNative:', isNative, 'hasPlugin:', !!hasPlugin);
+
         // Capacitorネイティブアプリではプラグインで native Google Sign-In を使用
-        if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+        if (hasPlugin) {
+            console.log('[AUTH DEBUG] Using native FirebaseAuthentication plugin');
             const FirebaseAuthentication = window.Capacitor.Plugins.FirebaseAuthentication;
-            if (FirebaseAuthentication) {
-                const result = await FirebaseAuthentication.signInWithGoogle();
-                const credential = firebase.auth.GoogleAuthProvider.credential(result.credential.idToken);
-                await firebase.auth().signInWithCredential(credential);
-                return;
-            }
+            const result = await FirebaseAuthentication.signInWithGoogle();
+            console.log('[AUTH DEBUG] Native sign-in result:', JSON.stringify(result));
+            const credential = firebase.auth.GoogleAuthProvider.credential(result.credential.idToken);
+            await firebase.auth().signInWithCredential(credential);
+            console.log('[AUTH DEBUG] signInWithCredential success');
+            return;
         }
         // Web: ポップアップ方式
+        console.log('[AUTH DEBUG] Using web signInWithPopup');
         const provider = new firebase.auth.GoogleAuthProvider();
         await firebase.auth().signInWithPopup(provider);
     } catch (error) {
-        console.error('ログインエラー:', error);
+        console.error('[AUTH DEBUG] Error:', error.code, error.message);
         if (error.code !== 'auth/popup-closed-by-user' &&
             error.code !== 'auth/cancelled-popup-request') {
-            alert('ログインに失敗しました。もう一度お試しください。');
+            alert('ログインエラー: ' + (error.code || error.message));
         }
     }
 }
