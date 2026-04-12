@@ -145,7 +145,15 @@ function init() {
 async function googleLogin() {
     try {
         const provider = new firebase.auth.GoogleAuthProvider();
-        await firebase.auth().signInWithPopup(provider);
+        // Capacitor（Android/iOS）ではリダイレクト方式を使用
+        const isApp = window.location.protocol === 'capacitor:' ||
+                      window.location.hostname === 'localhost' ||
+                      document.URL.startsWith('https://localhost');
+        if (isApp) {
+            await firebase.auth().signInWithRedirect(provider);
+        } else {
+            await firebase.auth().signInWithPopup(provider);
+        }
     } catch (error) {
         console.error('ログインエラー:', error);
         if (error.code !== 'auth/popup-closed-by-user') {
