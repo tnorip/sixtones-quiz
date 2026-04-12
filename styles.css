@@ -621,6 +621,13 @@ body::after {
     line-height: 1.5;
 }
 
+.proposed-by {
+    text-align: right;
+    font-size: 0.7rem;
+    color: #999;
+    margin-top: 6px;
+}
+
 .options {
     display: grid;
     gap: 8px;

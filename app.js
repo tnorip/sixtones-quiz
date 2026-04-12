@@ -14,7 +14,8 @@ async function loadQuizData() {
                 correct: data.correct,
                 difficulty: data.difficulty,
                 randomizeOptions: data.randomizeOptions !== undefined ? data.randomizeOptions : true,
-                explanation: data.explanation || ''
+                explanation: data.explanation || '',
+                proposedBy: data.proposedBy || ''
             };
         });
         console.log(`クイズデータ読み込み完了: ${quizData.length}問`);
@@ -546,6 +547,17 @@ function showQuestion() {
         `問題 ${currentQuestionIndex + 1}/${totalQ}`;
     document.getElementById('scoreDisplay').textContent = `正解: ${score}`;
     document.getElementById('questionText').textContent = question.question;
+
+    // 提案者名の表示
+    const proposedByEl = document.getElementById('proposedBy');
+    if (proposedByEl) {
+        if (question.proposedBy) {
+            proposedByEl.textContent = `提案: ${question.proposedBy}`;
+            proposedByEl.classList.remove('hidden');
+        } else {
+            proposedByEl.classList.add('hidden');
+        }
+    }
 
     // 解説ボタン・報告ボタンを非表示にリセット
     const explanationBtn = document.getElementById('explanationBtn');
