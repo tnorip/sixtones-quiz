@@ -148,22 +148,23 @@ function init() {
 // Googleログイン
 async function googleLogin() {
     try {
+        // Capacitorネイティブアプリではプラグインで native Google Sign-In を使用
+        if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+            const FirebaseAuthentication = window.Capacitor.Plugins.FirebaseAuthentication;
+            if (FirebaseAuthentication) {
+                const result = await FirebaseAuthentication.signInWithGoogle();
+                const credential = firebase.auth.GoogleAuthProvider.credential(result.credential.idToken);
+                await firebase.auth().signInWithCredential(credential);
+                return;
+            }
+        }
+        // Web: ポップアップ方式
         const provider = new firebase.auth.GoogleAuthProvider();
         await firebase.auth().signInWithPopup(provider);
     } catch (error) {
         console.error('ログインエラー:', error);
-        // ポップアップが失敗した場合、リダイレクト方式にフォールバック
-        if (error.code === 'auth/popup-blocked' ||
-            error.code === 'auth/popup-closed-by-user' ||
-            error.code === 'auth/cancelled-popup-request') {
-            try {
-                const provider = new firebase.auth.GoogleAuthProvider();
-                await firebase.auth().signInWithRedirect(provider);
-            } catch (redirectError) {
-                console.error('リダイレクトログインエラー:', redirectError);
-                alert('ログインに失敗しました。もう一度お試しください。');
-            }
-        } else {
+        if (error.code !== 'auth/popup-closed-by-user' &&
+            error.code !== 'auth/cancelled-popup-request') {
             alert('ログインに失敗しました。もう一度お試しください。');
         }
     }
@@ -172,6 +173,13 @@ async function googleLogin() {
 // ログアウト
 async function logout() {
     try {
+        // Capacitorネイティブアプリではプラグインからもサインアウト
+        if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+            const FirebaseAuthentication = window.Capacitor.Plugins.FirebaseAuthentication;
+            if (FirebaseAuthentication) {
+                await FirebaseAuthentication.signOut();
+            }
+        }
         await firebase.auth().signOut();
     } catch (error) {
         console.error('ログアウトエラー:', error);
