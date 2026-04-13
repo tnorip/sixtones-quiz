@@ -238,6 +238,16 @@ function showScreen(screenId) {
         container.classList.toggle('home-layout', screenId === 'startScreen' || screenId === 'usernameScreen' || screenId === 'loginScreen');
     }
 
+    // フッター: ログイン前の画面以外で表示
+    const appFooter = document.getElementById('appFooter');
+    if (appFooter) {
+        if (screenId === 'loadingScreen' || screenId === 'loginScreen' || screenId === 'usernameScreen') {
+            appFooter.classList.add('hidden');
+        } else {
+            appFooter.classList.remove('hidden');
+        }
+    }
+
     window.scrollTo(0, 0);
 }
 
@@ -1110,13 +1120,13 @@ function shareToX(text) {
 
 // 絆クイズ合格時のシェア
 document.getElementById('bondShareBtn')?.addEventListener('click', () => {
-    const text = `SixTONESクイズで【${currentGrade}】に合格しました！💎\n正解率: ${score}/${bondQuizConfig[currentGrade].questions}問\n#SixTONESクイズ #SixTONES`;
+    const text = `ストクイ！で【${currentGrade}】に合格しました！💎\n正解率: ${score}/${bondQuizConfig[currentGrade].questions}問\n#ストクイ #SixTONES`;
     shareToX(text);
 });
 
 // プロフィール画面のシェア
 document.getElementById('profileShareBtn')?.addEventListener('click', () => {
-    const text = `SixTONESクイズ 今シーズンの成績📊\nランク: ${userStats.rank}\nポイント: ${userStats.seasonPoints}P\n最高絆級: ${userStats.grade}\n#SixTONESクイズ #SixTONES`;
+    const text = `ストクイ！ 今シーズンの成績📊\nランク: ${userStats.rank}\nポイント: ${userStats.seasonPoints}P\n最高絆級: ${userStats.grade}\n#ストクイ #SixTONES`;
     shareToX(text);
 });
 
