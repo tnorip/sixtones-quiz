@@ -1,6 +1,6 @@
 {
-  "name": "ストクイ！",
-  "short_name": "ストクイ！",
+  "name": "ストQ",
+  "short_name": "ストQ",
   "description": "SixTONESに関する非公式のファン向けクイズに挑戦！全国のファンとランキングで競おう！",
   "start_url": "/index.html",
   "display": "standalone",

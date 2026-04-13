@@ -1918,10 +1918,11 @@ body::after {
 
 /* ホーム画面サブタイトル */
 .home-subtitle {
-    font-size: 0.75rem;
-    color: #999;
-    margin: -4px 0 8px;
-    letter-spacing: 0.5px;
+    font-size: 0.85rem;
+    color: #daa520;
+    margin: -2px 0 8px;
+    letter-spacing: 1px;
+    opacity: 0.85;
 }
 
 /* フッター（免責事項） */

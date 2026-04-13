@@ -1120,13 +1120,13 @@ function shareToX(text) {
 
 // 絆クイズ合格時のシェア
 document.getElementById('bondShareBtn')?.addEventListener('click', () => {
-    const text = `ストクイ！で【${currentGrade}】に合格しました！💎\n正解率: ${score}/${bondQuizConfig[currentGrade].questions}問\n#ストクイ #SixTONES`;
+    const text = `ストQで【${currentGrade}】に合格しました！💎\n正解率: ${score}/${bondQuizConfig[currentGrade].questions}問\n#ストQ #SixTONES`;
     shareToX(text);
 });
 
 // プロフィール画面のシェア
 document.getElementById('profileShareBtn')?.addEventListener('click', () => {
-    const text = `ストクイ！ 今シーズンの成績📊\nランク: ${userStats.rank}\nポイント: ${userStats.seasonPoints}P\n最高絆級: ${userStats.grade}\n#ストクイ #SixTONES`;
+    const text = `ストQ 今シーズンの成績📊\nランク: ${userStats.rank}\nポイント: ${userStats.seasonPoints}P\n最高絆級: ${userStats.grade}\n#ストQ #SixTONES`;
     shareToX(text);
 });
 
