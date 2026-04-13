@@ -1915,3 +1915,44 @@ body::after {
     font-size: 1.3rem;
     font-weight: bold;
 }
+
+/* ホーム画面サブタイトル */
+.home-subtitle {
+    font-size: 0.75rem;
+    color: #999;
+    margin: -4px 0 8px;
+    letter-spacing: 0.5px;
+}
+
+/* フッター（免責事項） */
+.app-footer {
+    margin-top: 24px;
+    padding: 16px 12px 12px;
+    border-top: 1px solid rgba(218, 165, 32, 0.2);
+    text-align: center;
+}
+
+.footer-disclaimer {
+    font-size: 0.65rem;
+    color: #777;
+    line-height: 1.6;
+    margin-bottom: 8px;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.footer-links a {
+    font-size: 0.65rem;
+    color: #999;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.footer-links a:hover {
+    color: #daa520;
+}
