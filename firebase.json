@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "st-fanquiz",
     "public": ".",
     "ignore": [
       "firebase.json",
@@ -7,8 +8,8 @@
       "**/node_modules/**",
       "android/**",
       "www/**",
+      "*.bat",
       "!firebase-config.js"
     ]
   }
 }
-
