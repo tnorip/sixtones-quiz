@@ -370,6 +370,107 @@ body::after {
     flex-shrink: 0;
 }
 
+/* ===== ログイン画面コンテンツ ===== */
+.login-hero {
+    margin-bottom: 20px;
+}
+
+.login-logo {
+    font-weight: 900;
+    font-size: clamp(2.5rem, 9vw, 4rem);
+    background: linear-gradient(135deg, #ffd700 0%, #fff 40%, #ffd700 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 2px;
+    line-height: 1.2;
+}
+
+.login-tagline {
+    font-size: 0.85rem;
+    color: #daa520;
+    margin-top: 6px;
+    letter-spacing: 1px;
+    opacity: 0.85;
+}
+
+.login-login-note {
+    font-size: 0.75rem;
+    color: #999;
+    margin-top: 10px;
+    margin-bottom: 0;
+}
+
+.login-features {
+    margin-top: 32px;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.login-feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(218, 165, 32, 0.2);
+    border-radius: 12px;
+    padding: 14px;
+}
+
+.login-feature-icon {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-feature-text h3 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #daa520;
+    margin-bottom: 4px;
+}
+
+.login-feature-text p {
+    font-size: 0.75rem;
+    color: #aaa;
+    line-height: 1.6;
+}
+
+.login-site-info {
+    margin-top: 28px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(218, 165, 32, 0.2);
+}
+
+.login-site-info > p {
+    font-size: 0.65rem;
+    color: #777;
+    line-height: 1.6;
+    margin-bottom: 8px;
+}
+
+.login-site-links {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.login-site-links a {
+    font-size: 0.65rem;
+    color: #999;
+    text-decoration: none;
+}
+
+.login-site-links a:hover {
+    color: #daa520;
+}
+
 /* ===== ログアウトボタン ===== */
 .btn-logout {
     font-family: 'Noto Sans JP', sans-serif;
