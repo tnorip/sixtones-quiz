@@ -394,51 +394,101 @@ body::after {
     opacity: 0.85;
 }
 
-.login-login-note {
-    font-size: 0.75rem;
-    color: #999;
-    margin-top: 10px;
-    margin-bottom: 0;
-}
-
-.login-features {
-    margin-top: 32px;
-    text-align: left;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.login-feature {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(218, 165, 32, 0.2);
-    border-radius: 12px;
-    padding: 14px;
-}
-
-.login-feature-icon {
-    flex-shrink: 0;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.login-feature-text h3 {
-    font-size: 0.9rem;
+.login-cta {
+    font-size: 1.1rem;
     font-weight: 700;
-    color: #daa520;
-    margin-bottom: 4px;
+    color: #333;
+    margin-bottom: 12px;
 }
 
-.login-feature-text p {
-    font-size: 0.75rem;
-    color: #aaa;
-    line-height: 1.6;
+.login-quiz-examples {
+    margin-top: 28px;
+    position: relative;
+    height: 260px;
+}
+
+.login-quiz-card {
+    position: absolute;
+    width: 75%;
+    background: rgba(30, 30, 50, 0.95);
+    border: 1px solid rgba(218, 165, 32, 0.4);
+    border-radius: 12px;
+    padding: 14px 16px;
+    text-align: left;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.login-quiz-card.card-1 {
+    top: 0;
+    left: 0;
+    transform: rotate(-4deg);
+    z-index: 1;
+}
+
+.login-quiz-card.card-2 {
+    top: 60px;
+    right: 0;
+    left: auto;
+    transform: rotate(3deg);
+    z-index: 2;
+}
+
+.login-quiz-card.card-3 {
+    top: 140px;
+    left: 10%;
+    transform: rotate(-2deg);
+    z-index: 3;
+}
+
+.login-quiz-badge {
+    display: inline-block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-bottom: 6px;
+}
+
+.login-quiz-badge.beginner {
+    background: #4ecdc4;
+    color: #fff;
+}
+
+.login-quiz-badge.intermediate {
+    background: #daa520;
+    color: #fff;
+}
+
+.login-quiz-badge.advanced {
+    background: #e74c3c;
+    color: #fff;
+}
+
+.login-quiz-q {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #eee;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.login-quiz-opts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+}
+
+.login-quiz-opts span {
+    font-size: 0.6rem;
+    color: #bbb;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 4px 8px;
+    border-radius: 6px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .login-site-info {
