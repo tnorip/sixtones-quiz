@@ -378,10 +378,8 @@ body::after {
 .login-logo {
     font-weight: 900;
     font-size: clamp(2.5rem, 9vw, 4rem);
-    background: linear-gradient(135deg, #ffd700 0%, #fff 40%, #ffd700 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #fff;
+    text-shadow: 0 0 20px rgba(218, 165, 32, 0.6), 0 2px 4px rgba(0, 0, 0, 0.5);
     letter-spacing: 2px;
     line-height: 1.2;
 }
@@ -404,19 +402,19 @@ body::after {
 .login-quiz-examples {
     margin-top: 28px;
     position: relative;
-    height: 260px;
+    height: 420px;
+    overflow: hidden;
 }
 
 .login-quiz-card {
     position: absolute;
-    width: 75%;
+    width: 70%;
     background: rgba(30, 30, 50, 0.95);
     border: 1px solid rgba(218, 165, 32, 0.4);
     border-radius: 12px;
-    padding: 14px 16px;
+    padding: 12px 14px;
     text-align: left;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-    transition: transform 0.3s ease;
 }
 
 .login-quiz-card.card-1 {
@@ -427,7 +425,7 @@ body::after {
 }
 
 .login-quiz-card.card-2 {
-    top: 60px;
+    top: 50px;
     right: 0;
     left: auto;
     transform: rotate(3deg);
@@ -435,34 +433,33 @@ body::after {
 }
 
 .login-quiz-card.card-3 {
-    top: 140px;
-    left: 10%;
+    top: 120px;
+    left: 5%;
     transform: rotate(-2deg);
     z-index: 3;
 }
 
-.login-quiz-badge {
-    display: inline-block;
-    font-size: 0.6rem;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 10px;
-    margin-bottom: 6px;
+.login-quiz-card.card-4 {
+    top: 190px;
+    right: 2%;
+    left: auto;
+    transform: rotate(4deg);
+    z-index: 4;
 }
 
-.login-quiz-badge.beginner {
-    background: #4ecdc4;
-    color: #fff;
+.login-quiz-card.card-5 {
+    top: 270px;
+    left: 8%;
+    transform: rotate(-3deg);
+    z-index: 5;
 }
 
-.login-quiz-badge.intermediate {
-    background: #daa520;
-    color: #fff;
-}
-
-.login-quiz-badge.advanced {
-    background: #e74c3c;
-    color: #fff;
+.login-quiz-card.card-6 {
+    top: 340px;
+    right: 5%;
+    left: auto;
+    transform: rotate(2deg);
+    z-index: 6;
 }
 
 .login-quiz-q {
