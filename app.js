@@ -138,10 +138,14 @@ function init() {
                 showScreen('usernameScreen');
             }
         } else {
+            // AdSense審査用: 未ログインでもホーム画面を表示（審査通過後に戻す）
             currentUser = null;
             uid = '';
             username = '';
-            showScreen('loginScreen');
+            userStats = getDefaultUserStats();
+            await loadQuizData();
+            showScreen('startScreen');
+            updateStartScreen();
         }
     });
 }
